@@ -282,40 +282,92 @@ var Player = SpritesheetEntity.extend({
         this.growFactor = 0.01;
 
         this.getContent().interactive = true;
-		this.getContent().mousemove = this.getContent().touchmove = function(touchData){
+		// this.getContent().mousemove = this.getContent().touchmove = function(touchData){
+		// 	self.onMouseDown = true;
+  //       	self.debugPolygon.tint = 0xFF0000;
+			
+  //       };
+  //       this.getContent().mousedown = this.getContent().touchstart = function(touchData){
+  //       	self.onMouseDown = true;
+  //       	self.debugPolygon.tint = 0xFF0000;
+  //       };
 
-        };
-        this.getContent().mousedown = this.getContent().touchstart = function(touchData){
-        	self.onMouseDown = true;
-        };
+  //       this.getContent().on('mousedown', onDragStart)
+  //       .on('touchstart', onDragStart)
+  //       // events for drag end
+  //       .on('mouseup', onDragEnd)
+  //       .on('mouseupoutside', onDragEnd)
+  //       .on('touchend', onDragEnd)
+  //       .on('touchendoutside', onDragEnd)
+  //       // events for drag move
+  //       .on('mousemove', onDragMove)
+  //       .on('touchmove', onDragMove);
+
+  //       function onDragStart(event)
+		// {
+		//     // store a reference to the data
+		//     // the reason for this is because of multitouch
+		//     // we want to track the movement of this particular touch
+		//     this.data = event.data;
+		//     this.alpha = 0.5;
+		//     this.dragging = true;
+		// }
+
+		// function onDragEnd()
+		// {
+		//     this.alpha = 1;
+
+		//     this.dragging = false;
+
+		//     // set the interaction data to null
+		//     this.data = null;
+		// }
+
+		// function onDragMove()
+		// {
+		//     if (this.dragging)
+		//     {
+		//         var newPosition = this.data.getLocalPosition(this.parent);
+		//         this.position.x = newPosition.x;
+		//         this.position.y = newPosition.y;
+		//     }
+		// }
 
 
         this.debugPolygon(Math.random() * 0xFFFFFF,true)
 	},
+
 	updateScale:function(target){
 		this.getContent().scale.x = this.getContent().scale.y = this.scales.min + this.scales.max - target.getContent().scale.x;		
 	},
 	update:function(){
 		if(this.onMouseDown){
-			TweenLite.to(this.getContent().position, 0.2,{x:APP.getStage().getMousePosition().x,y:APP.getStage().getMousePosition().y});
-			
-			if(this.getContent().scale.x < this.scales.max){
+			mPosition = APP.getStage().getMousePosition();
+			if(mPosition.x + mPosition.y > 0){
+				TweenLite.to(this.getContent().position, 0.2,{x:APP.getStage().getMousePosition().x,y:APP.getStage().getMousePosition().y});
+				
+				if(this.getContent().scale.x < this.scales.max){
 
-				this.getContent().scale.x += 0.01;
-				this.getContent().scale.y += 0.01;
+					this.getContent().scale.x += 0.01;
+					this.getContent().scale.y += 0.01;
 
-				this.range = this.standardRange * this.getContent().scale.x;
+					this.range = this.standardRange * this.getContent().scale.x;
+				}
+
+				// console.log(this.getContent().scale.y);
+				// this.getContent().position.x = APP.getStage().getMousePosition().x;
+				// this.getContent().position.y = APP.getStage().getMousePosition().y;
+			}else{
+				// this.onMouseDown = false;
 			}
-
-			console.log(this.getContent().scale.y);
-			// this.getContent().position.x = APP.getStage().getMousePosition().x;
-			// this.getContent().position.y = APP.getStage().getMousePosition().y;
+		}else{
+			this.debugPolygon.tint = 0xFFFFFF;
 		}
 		this._super();
 	},
 	collide:function(arrayCollide){
-		console.log(arrayCollide);
-        // console.log('fireCollide', arrayCollide[0].type);
+		// console.log(arrayCollide);
+        console.log('fireCollide', arrayCollide[0].type);
         if(this.collidable){
             if(arrayCollide[0].type === 'enemy'){
                 this.getContent().tint = 0xff0000;
@@ -1449,14 +1501,47 @@ var GameScreen = AbstractScreen.extend({
         this.player2.getContent().position.y = windowHeight/1.5;
 
 
-        APP.getStage().mouseup = APP.getStage().touchend = function(touchData){
-            self.player1.onMouseDown = false;
-            self.player2.onMouseDown = false;
+        // APP.getStage().mouseup = APP.getStage().touchend = function(touchData){
+        //     self.player1.onMouseDown = false;
+        //     self.player2.onMouseDown = false;
+        // };
+
+        this.gameHit = new PIXI.Graphics();
+        this.gameHit.interactive = true;
+        this.gameHit.beginFill(0xFF0000);
+        this.gameHit.drawRect(0,0,windowWidth, windowHeight);
+        this.gameContainer.addChild(this.gameHit);
+        this.gameHit.alpha = 0.1;
+        this.gameHit.hitArea = new PIXI.Rectangle(0, 0, windowWidth, windowHeight);
+
+        
+        
+//detectar colisoes aqui pra mover depois
+        this.gameHit.mousemove = this.gameHit.touchmove = function(touchData){
+            
+
+            if(pointDistance(touchData.global.x, touchData.global.y,self.player1.getContent().position.x, self.player1.getContent().position.y) < self.player1.range * 2){
+            self.label.setText("collide");
+            }else{
+                self.label.setText("mousemove"+touchData.global.x);
+            }
         };
+        this.gameHit.mousedown = this.gameHit.touchstart = function(touchData){
+            self.label.setText("mousedown "+touchData.target.x);
+            console.log(touchData);
+            // if()
+        };
+        this.gameHit.mouseup = this.gameHit.touchend = function(touchData){
+            self.label.setText("mouseup");
+        };
+
 
         this.updateable = true;
 
         this.addChild(this.layerManager);
+
+        this.label = new PIXI.Text("", {font:"50px Arial", fill:"red"});
+        this.addChild(this.label);
     },
     updateScales:function()
     {
@@ -1468,9 +1553,12 @@ var GameScreen = AbstractScreen.extend({
     },
     update:function()
     {
+        // console.log(APP.getStage().getMousePosition());
+
         if(!this.updateable){
             return;
         }
+        // this.label.setText(APP.getStage().getMousePosition().x +" - "+ APP.getStage().getMousePosition().y);
         if(this.layerManager){
             this.entityLayer.collideChilds(this.player1);
             this.entityLayer.collideChilds(this.player2);
