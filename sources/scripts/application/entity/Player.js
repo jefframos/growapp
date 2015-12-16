@@ -1,15 +1,17 @@
 var Player = SpritesheetEntity.extend({
-	init:function(){
+	init:function(parent, label){
 		this._super( true );
         this.updateable = false;
         this.deading = false;
-        this.range = 40;
-        this.standardRange = 40;
+        // this.range = 40;
+        this.range = this.standardRange = windowWidth * 0.05;
         this.width = 0;
         this.height = 0;
-        this.type = 'heart';
+        this.type = 'player';
+        this.subType = label;
         this.node = null;
         this.life = 5;
+        this.parentClass = parent;
 	},
 	debugPolygon: function(color, force){
         // this.debugPolygon = new PIXI.Graphics();
@@ -25,6 +27,7 @@ var Player = SpritesheetEntity.extend({
 	build:function(){
 		// this._super();
 
+
 		var self = this;
         var motionArray = this.getFramesByRange('dragon10',0,14);
         var animationIdle = new SpritesheetAnimation();
@@ -33,8 +36,11 @@ var Player = SpritesheetEntity.extend({
         this.spritesheet.addAnimation(animationIdle);
         this.spritesheet.play('idle');
         this.centerPosition = {x:0, y:0};
+		this.debugPolygon(Math.random() * 0xFFFFFF,true)
         // this.centerPosition = {x:this.width/2, y:this.height/2};
 
+
+        
         this.updateable = true;
         this.collidable = true;
 
@@ -44,100 +50,55 @@ var Player = SpritesheetEntity.extend({
 
         this.getContent().scale.x = this.getContent().scale.y = this.scales.min + (this.scales.max - this.scales.min) / 2;
 
-        this.growFactor = 0.01;
+        this.growFactor = windowWidth * 0.0002;
 
         this.getContent().interactive = true;
-		// this.getContent().mousemove = this.getContent().touchmove = function(touchData){
-		// 	self.onMouseDown = true;
-  //       	self.debugPolygon.tint = 0xFF0000;
-			
-  //       };
-  //       this.getContent().mousedown = this.getContent().touchstart = function(touchData){
-  //       	self.onMouseDown = true;
-  //       	self.debugPolygon.tint = 0xFF0000;
-  //       };
+        
 
-  //       this.getContent().on('mousedown', onDragStart)
-  //       .on('touchstart', onDragStart)
-  //       // events for drag end
-  //       .on('mouseup', onDragEnd)
-  //       .on('mouseupoutside', onDragEnd)
-  //       .on('touchend', onDragEnd)
-  //       .on('touchendoutside', onDragEnd)
-  //       // events for drag move
-  //       .on('mousemove', onDragMove)
-  //       .on('touchmove', onDragMove);
+        // this.getTexture().width = 100;
 
-  //       function onDragStart(event)
-		// {
-		//     // store a reference to the data
-		//     // the reason for this is because of multitouch
-		//     // we want to track the movement of this particular touch
-		//     this.data = event.data;
-		//     this.alpha = 0.5;
-		//     this.dragging = true;
-		// }
-
-		// function onDragEnd()
-		// {
-		//     this.alpha = 1;
-
-		//     this.dragging = false;
-
-		//     // set the interaction data to null
-		//     this.data = null;
-		// }
-
-		// function onDragMove()
-		// {
-		//     if (this.dragging)
-		//     {
-		//         var newPosition = this.data.getLocalPosition(this.parent);
-		//         this.position.x = newPosition.x;
-		//         this.position.y = newPosition.y;
-		//     }
-		// }
-
-
-        this.debugPolygon(Math.random() * 0xFFFFFF,true)
+        console.log(this.spritesheet.container.children);
+        this.spritesheet.container.width = 200;
+        this.spritesheet.container.children[0].alpha = 0.2;
 	},
 
+	reset:function(){
+		TweenLite.killTweensOf(this.getContent());
+		this.getContent().scale.x = this.getContent().scale.y = this.scales.min + (this.scales.max - this.scales.min) / 2;
+	},
+	goTo:function(position){
+		TweenLite.to(this.getContent().position, 0.1,{x:position.x,y:position.y});
+	},
 	updateScale:function(target){
+		
+		if(target.getContent().scale.x < target.scales.max){
+
+			target.getContent().scale.x += this.growFactor;
+			target.getContent().scale.y += this.growFactor;
+
+			target.range = target.standardRange * target.getContent().scale.x;
+			// console.log(target.range);
+		}
+		//target.getContent().scale.x = target.getContent().scale.y += this.growFactor;
 		this.getContent().scale.x = this.getContent().scale.y = this.scales.min + this.scales.max - target.getContent().scale.x;		
 	},
 	update:function(){
-		if(this.onMouseDown){
-			mPosition = APP.getStage().getMousePosition();
-			if(mPosition.x + mPosition.y > 0){
-				TweenLite.to(this.getContent().position, 0.2,{x:APP.getStage().getMousePosition().x,y:APP.getStage().getMousePosition().y});
-				
-				if(this.getContent().scale.x < this.scales.max){
-
-					this.getContent().scale.x += 0.01;
-					this.getContent().scale.y += 0.01;
-
-					this.range = this.standardRange * this.getContent().scale.x;
-				}
-
-				// console.log(this.getContent().scale.y);
-				// this.getContent().position.x = APP.getStage().getMousePosition().x;
-				// this.getContent().position.y = APP.getStage().getMousePosition().y;
-			}else{
-				// this.onMouseDown = false;
-			}
-		}else{
-			this.debugPolygon.tint = 0xFFFFFF;
-		}
 		this._super();
+
+		this.range = this.standardRange * this.getContent().scale.x;
 	},
 	collide:function(arrayCollide){
 		// console.log(arrayCollide);
-        console.log('fireCollide', arrayCollide[0].type);
+        // console.log('fireCollide', arrayCollide[0].type);
+        console.log(arrayCollide[0].type);
+        if(this.parentClass){
+        	this.parentClass.gameOver();
+        }
         if(this.collidable){
             if(arrayCollide[0].type === 'enemy'){
-                this.getContent().tint = 0xff0000;
-                this.preKill();
-                arrayCollide[0].hurt(this.power);
+                // this.getContent().tint = 0xff0000;
+                // this.preKill();
+                // arrayCollide[0].hurt(this.power);
 
             }
         }

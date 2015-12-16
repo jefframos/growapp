@@ -1,5 +1,5 @@
 /*jshint undef:false */
-var Enemy = SpritesheetEntity.extend({
+var Enemy2 = SpritesheetEntity.extend({
     init:function(player){
         this._super( true );
         this.updateable = false;

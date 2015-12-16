@@ -18,10 +18,6 @@ var GameScreen = AbstractScreen.extend({
         }else{
             this.onAssetsLoaded();
         }
-
-        
-       
-
     },
     showModal:function(){
     },
@@ -36,11 +32,13 @@ var GameScreen = AbstractScreen.extend({
         this._super();
         this.layerManager = new LayerManager();
         this.entityLayer = new Layer("Entity");
+        this.enemyLayer = new Layer("Enemy");
         this.layerManager.addLayer(this.entityLayer);
+        this.layerManager.addLayer(this.enemyLayer);
 
         var self = this;
 
-        this.player1 = new Player();
+        this.player1 = new Player(this,"PLAYER1");
         this.player1.build();
         this.entityLayer.addChild(this.player1);
         this.player1.getContent().position.x = windowWidth/2;
@@ -48,13 +46,13 @@ var GameScreen = AbstractScreen.extend({
 
 
 
-        this.player2 = new Player();
+        this.player2 = new Player(this,"PLAYER2");
         this.player2.build();
         this.entityLayer.addChild(this.player2);
         this.player2.getContent().position.x = windowWidth/1.5;
         this.player2.getContent().position.y = windowHeight/1.5;
 
-
+        this.player1.collideCallback = this.player2.collideCallback = this.gameOver;
         // APP.getStage().mouseup = APP.getStage().touchend = function(touchData){
         //     self.player1.onMouseDown = false;
         //     self.player2.onMouseDown = false;
@@ -70,23 +68,30 @@ var GameScreen = AbstractScreen.extend({
 
         
         
-//detectar colisoes aqui pra mover depois
+    //detectar colisoes aqui pra mover depois
         this.gameHit.mousemove = this.gameHit.touchmove = function(touchData){
-            
-
-            if(pointDistance(touchData.global.x, touchData.global.y,self.player1.getContent().position.x, self.player1.getContent().position.y) < self.player1.range * 2){
-            self.label.setText("collide");
-            }else{
-                self.label.setText("mousemove"+touchData.global.x);
+            if(!self.updateable){
+                return;
+            }
+            self.currentPosition = touchData.global;
+            if(self.touchDown){
+                self.detectTouchCollision(touchData);
             }
         };
         this.gameHit.mousedown = this.gameHit.touchstart = function(touchData){
-            self.label.setText("mousedown "+touchData.target.x);
-            console.log(touchData);
-            // if()
+            if(!self.updateable){
+                return;
+            }
+            self.currentPosition = touchData.global;
+            self.touchDown = true;
+            self.detectTouchCollision(touchData);
         };
         this.gameHit.mouseup = this.gameHit.touchend = function(touchData){
-            self.label.setText("mouseup");
+            self.label.setText("");
+            self.touchDown = false;
+            self.currentPosition = null;
+            self.selectedPlayer = null;
+            self.onReset = false;
         };
 
 
@@ -94,31 +99,113 @@ var GameScreen = AbstractScreen.extend({
 
         this.addChild(this.layerManager);
 
+        this.players = [this.player1, this.player2];
+
+
         this.label = new PIXI.Text("", {font:"50px Arial", fill:"red"});
         this.addChild(this.label);
+
+
+
+        this.reset();
+        
+    },
+    reset:function(){
+        this.selectedPlayer = null;
+        this.touchDown = false;
+        this.currentPosition = null;
+        this.currentLocalPosition = null;
+        this.enemyCounter = windowHeight * 0.15;
+        this.maxEnemyCounter = windowHeight * 0.15;
+        this.onReset = true;
+        this.updateable = true;
+        this.player1.reset();
+        this.player2.reset();
+
+        this.player1.getContent().position.x = this.player1.range * 2;
+        this.player1.getContent().position.y = windowHeight - this.player1.range * 2;
+        
+        this.player2.getContent().position.x = windowWidth - this.player1.range * 2;
+        this.player2.getContent().position.y = windowHeight - this.player2.range * 2;
+    },
+    gameOver:function()
+    {
+        
+        for (var i = this.enemyLayer.childs.length - 1; i >= 0; i--) {
+            this.enemyLayer.removeChild(this.enemyLayer.childs[i]);
+        };
+
+
+        this.updateable = false;
+
+        this.reset();
+
+        // console.log(this);
+        this.label.setText("gameOver");
+    },
+    detectTouchCollision:function(touchData)
+    {
+        if(this.onReset){
+            return;
+        }
+        var hasCollide = false;
+        for (var i = this.players.length - 1; i >= 0; i--) {
+            
+            if(!this.selectedPlayer && pointDistance(touchData.global.x, touchData.global.y,this.players[i].getContent().position.x, this.players[i].getContent().position.y) < this.players[i].range){                
+                hasCollide = true;
+                this.selectedPlayer = this.players[i];
+
+                this.currentLocalPosition = {x:touchData.global.x - this.players[i].getContent().position.x, y:touchData.global.y - this.players[i].getContent().position.y};
+            }
+        };
+        // console.log(hasCollide);
+    
     },
     updateScales:function()
     {
-        if(this.player2.onMouseDown){
+        if(this.selectedPlayer.subType == this.player2.subType){
             this.player1.updateScale(this.player2);
-        }else if(this.player1.onMouseDown){
+        }else if(this.selectedPlayer.subType == this.player1.subType){
             this.player2.updateScale(this.player1);
+        }
+    },
+    updateEnemySpawner:function()
+    {
+        if(this.enemyCounter < 0){
+            this.enemyCounter = this.maxEnemyCounter;
+            tempEnemy = new Enemy();
+            tempEnemy.build();
+            tempEnemy.velocity.y = windowHeight * 0.005;
+            tempEnemy.getContent().position.x = tempEnemy.range + Math.random() * (windowWidth - tempEnemy.range * 2)
+            this.enemyLayer.addChild(tempEnemy);
+        }else{
+            this.enemyCounter --;
         }
     },
     update:function()
     {
-        // console.log(APP.getStage().getMousePosition());
-
         if(!this.updateable){
             return;
         }
-        // this.label.setText(APP.getStage().getMousePosition().x +" - "+ APP.getStage().getMousePosition().y);
         if(this.layerManager){
-            this.entityLayer.collideChilds(this.player1);
-            this.entityLayer.collideChilds(this.player2);
+            this.updateEnemySpawner();
+            
 
-            this.updateScales();
+            if(this.selectedPlayer && this.touchDown){
+                this.label.setText(this.selectedPlayer.subType);
+                this.selectedPlayer.goTo({x:this.currentPosition.x - this.currentLocalPosition.x, y:this.currentPosition.y - this.currentLocalPosition.y});
+                this.updateScales();
+            }else{
+                this.label.setText("");
+            }
             this.layerManager.update();
+
+            this.entityLayer.collideChilds(this.player1);
+            // this.entityLayer.collideChilds(this.player2);
+
+
+            this.enemyLayer.collideChilds(this.player2);
+            this.enemyLayer.collideChilds(this.player1);
         }
     },
 });
