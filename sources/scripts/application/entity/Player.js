@@ -21,6 +21,14 @@ var Player = Entity.extend({
         this.playerContainer = new PIXI.DisplayObjectContainer();
 		this.entityContainer.addChild(this.playerContainer);
 
+		this.standardScale = null;
+
+		this.debugPolygon(Math.random() * 0xFFFFFF,true)
+
+		this.playerImage = new SimpleSprite("img/assets/teste1.png", {x:0.5, y:0.8});
+        this.playerContainer.addChild(this.playerImage.getContent());
+        // this.playerImage.getContent().width = this.range;
+        
 
 	},
 	debugPolygon: function(color, force){
@@ -33,44 +41,54 @@ var Player = Entity.extend({
 	build:function(){
 		var self = this;
         this.centerPosition = {x:0, y:0};
-		this.debugPolygon(Math.random() * 0xFFFFFF,true)
         // this.centerPosition = {x:this.width/2, y:this.height/2};
         this.updateable = true;
         this.collidable = true;
 
         this.onMouseDown = false;
 
-        this.scales = {min:1, max:2};
+        this.scales = {min:1, max:1.8};
 
         this.getContent().scale.x = this.getContent().scale.y = this.scales.min + (this.scales.max - this.scales.min) / 2;
 
         this.growFactor = windowWidth * 0.0002;
 
+        scaleConverter(this.playerContainer.width, this.debugContainer.width, 1, this.playerContainer);
+        // if(this.standardScale == null){
+        	this.standardScale = {x:0,y:0};
+        	this.standardScale.x = this.playerContainer.scale.x;
+        	this.standardScale.y = this.playerContainer.scale.y;
+        	// console.log("CHANGE");
+        // }
         // this.getContent().interactive = true;
 
-        this.playerImage = new SimpleSprite("img/assets/teste1.png", {x:0.5, y:0.8});
-        this.playerContainer.addChild(this.playerImage.getContent());
-        // this.playerImage.getContent().width = this.range;
-        scaleConverter(this.playerContainer.width, this.debugContainer.width, 1, this.playerContainer);
-        this.standardScale = this.playerContainer.scale;
     },
 
 	reset:function(){
-		TweenLite.killTweensOf(this.getContent());
+		// TweenLite.killTweensOf(this.getContent());
+		// TweenLite.killTweensOf(this.playerContainer);
+		// TweenLite.killTweensOf(this.playerContainer.scale);
 		this.getContent().scale.x = this.getContent().scale.y = this.scales.min + (this.scales.max - this.scales.min) / 2;
-		
-		var self = this;
-		this.timeline = new TimelineLite({onComplete:function(){
-				self.timeline.restart();
-			}
-		});
+		// // console.log(this.playerContainer.children.length);
+		// //scaleConverter(this.playerContainer.width, this.debugContainer.width, 1, this.playerContainer);
+		// console.log("lll",this.standardScale);
+		// // this.playerContainer.scale = this.standardScale;
+		// var self = this;
+		// if(this.timeline){
+		// 	this.timeline.clear();
+		// 	this.timeline.kill();
+		// }
+		// this.timeline = new TimelineLite({onComplete:function(){
+		// 		self.timeline.restart();
+		// 	}
+		// });
+		// this.animationSpeedReference = 0.4;
+		// this.timeline.add(TweenLite.to(this.playerContainer.scale, this.animationSpeedReference * 0.3, {x:this.standardScale.x * 1.1,y:this.standardScale.y * 0.9}));
+		// // this.timeline.add(TweenLite.to(this.playerContainer.scale, 0.2, {x:this.standardScale.x * 1.2,y:this.standardScale.y * 0.8}));
+		// this.timeline.add(TweenLite.to(this.playerContainer.scale, this.animationSpeedReference * 0.5, {x:this.standardScale.x * 0.9,y:this.standardScale.y * 1.1}));
+		// this.timeline.add(TweenLite.to(this.playerContainer.scale, this.animationSpeedReference * 0.2, {x:this.standardScale.x, y:this.standardScale.y}));
 
-		this.timeline.add(TweenLite.to(this.playerContainer.scale, 0.3, {x:this.standardScale.x * 1.1,y:this.standardScale.y * 0.9}));
-		// this.timeline.add(TweenLite.to(this.playerContainer.scale, 0.2, {x:this.standardScale.x * 1.2,y:this.standardScale.y * 0.8}));
-		this.timeline.add(TweenLite.to(this.playerContainer.scale, 0.4, {x:this.standardScale.x * 0.9,y:this.standardScale.y * 1.1}));
-		this.timeline.add(TweenLite.to(this.playerContainer.scale, 0.2, {x:this.standardScale.x, y:this.standardScale.y}));
-
-		this.timeline.resume();
+		// this.timeline.resume();
 
 	},
 	goTo:function(position){
@@ -99,7 +117,7 @@ var Player = Entity.extend({
 	collide:function(arrayCollide){
 		// console.log(arrayCollide);
         // console.log('fireCollide', arrayCollide[0].type);
-        console.log(arrayCollide[0].type);
+        // console.log(arrayCollide[0].type);
         if(this.parentClass){
         	this.parentClass.gameOver();
         }

@@ -1,4 +1,4 @@
-var Enemy = SpritesheetEntity.extend({
+var Enemy = Entity.extend({
 	init:function(label){
 		this._super( true );
         this.updateable = false;
@@ -10,12 +10,32 @@ var Enemy = SpritesheetEntity.extend({
         this.label = label;
         this.node = null;
         this.life = 5;
+
+        this.entityContainer = new PIXI.DisplayObjectContainer();
+
+        this.debugContainer = new PIXI.DisplayObjectContainer();
+        this.entityContainer.addChild(this.debugContainer);
+
+        this.debugPolygon(0xFF0000,true)
+
+        this.playerContainer = new PIXI.DisplayObjectContainer();
+        this.entityContainer.addChild(this.playerContainer);
+
+        this.playerImage = new SimpleSprite("img/assets/Blob_red.png", {x:0.5, y:0.5});
+        this.playerContainer.addChild(this.playerImage.getContent());
+        // this.playerImage.getContent().width = this.range;
+        scaleConverter(this.playerContainer.width, this.debugContainer.width, 1, this.playerContainer);
+        this.standardScale = this.playerContainer.scale;
 	},
 	debugPolygon: function(color, force){
         this.debugPolygon = new PIXI.Graphics();
-        this.debugPolygon.beginFill(color);
+        this.debugPolygon.lineStyle(0.5,color);
+        // this.debugPolygon.beginFill(color);
         this.debugPolygon.drawCircle(0,0,this.range);
-        this.getContent().addChild(this.debugPolygon);
+        this.debugContainer.addChild(this.debugPolygon);
+    },
+    getContent:function(){
+        return this.entityContainer;
     },
     getPosition:function(){
         return this.getContent().position;
@@ -24,44 +44,22 @@ var Enemy = SpritesheetEntity.extend({
 		// this._super();
 
 		var self = this;
-        var motionArray = this.getFramesByRange('dragon10',0,14);
-        var animationIdle = new SpritesheetAnimation();
-        animationIdle.build('idle', motionArray, 0, true, null);
-        this.spritesheet = new Spritesheet();
-        this.spritesheet.addAnimation(animationIdle);
-        this.spritesheet.play('idle');
+       
         this.centerPosition = {x:0, y:0};
-        // this.centerPosition = {x:this.width/2, y:this.height/2};
-
         this.updateable = true;
         this.collidable = true;
 
-        this.onMouseDown = false;
-
-        this.scales = {min:1, max:2};
-
-        //this.getContent().scale.x = this.getContent().scale.y = this.scales.min + (this.scales.max - this.scales.min) / 2;
-
-        this.growFactor = 0.1;
-
-        this.getContent().interactive = true;
-        this.debugPolygon(0xFF0000,true)
-
-        this.spritesheet.update();
 	},
 	update:function(){
 		// this._super();
         this.getContent().position.x += this.velocity.x;
         this.getContent().position.y += this.velocity.y;
 
-        this.spritesheet.update();
         // console.log(windowHeight);
-        if(this.getContent().position.y > windowHeight){
+        if(this.velocity.y > 0 && this.getContent().position.y > windowHeight){
             this.preKill();
-            // console.log(this.getPosition().y);
-            // this.kill = true;
-            this.velocity.y = 0;
-            // console.log("KILL");
+        }else if(this.velocity.y < 0 && this.getContent().position.y < -this.range){
+            this.preKill();
         }
         this.range = this.standardRange * this.getContent().scale.x;
 	},
@@ -79,6 +77,7 @@ var Enemy = SpritesheetEntity.extend({
     },
     preKill:function(){
         //this._super();
+        this.velocity = {x:0,y:0};
         if(this.collidable){
             var self = this;
             this.updateable = false;

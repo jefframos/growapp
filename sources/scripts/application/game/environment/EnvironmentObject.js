@@ -1,10 +1,13 @@
 var EnvironmentObject = Class.extend({
-	init:function(imgSrc){
+	init:function(imgSrc, mainScale){
 		this.environmentContainer = new PIXI.DisplayObjectContainer();
 
 		this.img = new SimpleSprite(imgSrc);
-		this.wallsScale = 0.1;
-		scaleConverter(this.img.getContent().width, windowWidth, this.wallsScale, this.img.getContent());
+		if( mainScale.x){
+			scaleConverter(this.img.getContent().width, windowWidth, mainScale.x, this.img.getContent());
+		} if( mainScale.y){
+				scaleConverter(this.img.getContent().height, windowHeight, mainScale.y, this.img.getContent());
+			}
 
 		this.assetList = [];
 
@@ -12,7 +15,11 @@ var EnvironmentObject = Class.extend({
 		for (var i = 0; i < totAssets; i++) {
 			this.img = new SimpleSprite(imgSrc);
 			this.environmentContainer.addChild(this.img.getContent());
-			scaleConverter(this.img.getContent().width, windowWidth, this.wallsScale, this.img.getContent());
+			if( mainScale.x){
+				scaleConverter(this.img.getContent().width, windowWidth, mainScale.x, this.img.getContent());
+			}else if( mainScale.y){
+				scaleConverter(this.img.getContent().height, windowHeight, mainScale.y, this.img.getContent());
+			}
 			this.img.getContent().position.y = this.img.getContent().height * i - this.img.getContent().height;
 			this.assetList.push(this.img);
 		};
@@ -21,6 +28,7 @@ var EnvironmentObject = Class.extend({
 		
 	},
 	update:function(){
+		// console.log(this.velocity);
 		for (var i = this.assetList.length - 1; i >= 0; i--) {
 			this.assetList[i].getContent().position.x += this.velocity.x;
 			this.assetList[i].getContent().position.y += this.velocity.y;
@@ -44,7 +52,6 @@ var EnvironmentObject = Class.extend({
 				maxPosition = this.assetList[j].getContent().position.y;
 			}
 		};
-		console.log(maxPosition);
 		return maxPosition
 	},
 	getMinPosition:function(){

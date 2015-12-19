@@ -44,11 +44,16 @@ var GameScreen = AbstractScreen.extend({
         this.layerManager.addLayer(this.enemyLayer);
         this.layerManager.addLayer(this.entityLayer);
 
+        this.verticalSpeed = windowHeight * 0.005;
 
-
-        this.environment = new Environment();
+        configEnvironment = {
+            floorScale:0.8,
+            leftWallScale:0.1,
+            rightWallScale:0.1,
+        }
+        this.environment = new Environment(configEnvironment);
         this.environmentLayer.addChild(this.environment);
-        this.environment.velocity.y = -1;
+        this.environment.velocity.y = -this.verticalSpeed;
 
         var self = this;
 
@@ -96,6 +101,7 @@ var GameScreen = AbstractScreen.extend({
                 if(!self.updateable){
                     return;
                 }
+                self.onReset = false;
                 self.currentPosition = touchData.global;
                 self.touchDown = true;
                 self.detectTouchCollision(touchData);
@@ -129,18 +135,22 @@ var GameScreen = AbstractScreen.extend({
         this.touchDown = false;
         this.currentPosition = null;
         this.currentLocalPosition = null;
-        this.enemyCounter = windowHeight * 0.15;
-        this.maxEnemyCounter = windowHeight * 0.15;
-        this.onReset = true;
-        this.updateable = true;
         this.player1.reset();
         this.player2.reset();
 
+        this.enemyCounter = this.verticalSpeed;
+        this.maxEnemyCounter = this.verticalSpeed * this.player1.standardRange// * this.player1.scales.max;
+        // console.log(this.verticalSpeed , this.player1.standardScale , this.player1.scales.max , 1.5);
+        // this.enemyCounter = windowHeight * 0.2;
+        // this.maxEnemyCounter = windowHeight * 0.2;
+        this.onReset = true;
+        this.updateable = true;
+
         this.player1.getContent().position.x = windowWidth / 2 - this.player1.range * 2;
-        this.player1.getContent().position.y = windowHeight / 2 - this.player1.range * 2;
+        this.player1.getContent().position.y = this.player1.range * 4;
         
         this.player2.getContent().position.x = windowWidth / 2 + this.player1.range * 2;
-        this.player2.getContent().position.y = windowHeight / 2 - this.player2.range * 2;
+        this.player2.getContent().position.y = this.player2.range * 4;
     },
     gameOver:function()
     {
@@ -162,6 +172,7 @@ var GameScreen = AbstractScreen.extend({
         if(this.onReset){
             return;
         }
+        // console.log("detectTouchCollision");
         var hasCollide = false;
         for (var i = this.players.length - 1; i >= 0; i--) {
             
@@ -187,8 +198,11 @@ var GameScreen = AbstractScreen.extend({
             this.enemyCounter = this.maxEnemyCounter;
             tempEnemy = new Enemy();
             tempEnemy.build();
-            tempEnemy.velocity.y = windowHeight * 0.005;
+            tempEnemy.velocity.y = -this.verticalSpeed;
             tempEnemy.getContent().position.x = tempEnemy.range + Math.random() * (windowWidth - tempEnemy.range * 2)
+            tempEnemy.getContent().position.y = tempEnemy.range + windowHeight;
+            scaleConverter(tempEnemy.getContent().width, windowWidth, 0.08, tempEnemy.getContent());
+            // tempEnemy.getContent().scale.x = tempEnemy.getContent().scale.y = 0.5
             this.enemyLayer.addChild(tempEnemy);
         }else{
             this.enemyCounter --;
@@ -200,13 +214,22 @@ var GameScreen = AbstractScreen.extend({
             return;
         }
         if(this.layerManager){
-            //this.updateEnemySpawner();
+            this.updateEnemySpawner();
             
 
-            if(this.selectedPlayer && this.touchDown){
+            if(this.selectedPlayer && this.touchDown && this.currentPosition.x + this.currentPosition.y > 0){
                 this.label.setText(this.selectedPlayer.subType);
-                this.selectedPlayer.goTo({x:this.currentPosition.x - this.currentLocalPosition.x, y:this.currentPosition.y - this.currentLocalPosition.y});
+                targetPosition = {x:this.currentPosition.x - this.currentLocalPosition.x, y:this.currentPosition.y - this.currentLocalPosition.y}
+                // console.log(targetPosition);
+                if(targetPosition.x - this.selectedPlayer.range < (this.environment.model.leftWallScale * windowWidth)){
+                    targetPosition.x = this.environment.model.leftWallScale * windowWidth + this.selectedPlayer.range;
+                }else if(targetPosition.x + this.selectedPlayer.range > ((1 - this.environment.model.rightWallScale) * windowWidth)){
+                    targetPosition.x = ((1 - this.environment.model.rightWallScale) * windowWidth) - this.selectedPlayer.range
+                }
+
+                this.selectedPlayer.goTo(targetPosition);
                 this.updateScales();
+
             }else{
                 this.label.setText("");
             }
