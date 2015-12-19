@@ -25,478 +25,6 @@ var Application = AbstractApplication.extend({
     },
 });
 
-var Ball = Class.extend({
-	init:function(){
-		this.entityContainer = new PIXI.DisplayObjectContainer();
-		this.graphics = new PIXI.Graphics();
-		this.graphics.beginFill(0x553388);
-		this.radius = 30;
-		this.graphics.drawCircle(0,0,this.radius);
-		this.entityContainer.addChild(this.graphics);
-		this.velocity = {x:0,y:0};
-		this.jumpForce = 8;
-	},
-	jump:function(){
-		this.graphics.beginFill(Math.random() * 0xFFFFFF);
-		this.graphics.drawCircle(0,0,30);
-		this.velocity.y = -this.jumpForce;
-	},
-	update:function(){
-		this.entityContainer.position.x += this.velocity.x;
-		this.entityContainer.position.y += this.velocity.y;
-	},
-	getContent:function(){
-		return this.entityContainer;
-	}
-});
-
-var Button1 = Entity.extend({
-	init:function(){
-		this.entityContainer = new PIXI.DisplayObjectContainer();
-		this.imgScr = new SimpleSprite("img/assets/modal_buttons/button_1.png");
-        this.entityContainer.addChild(this.imgScr.getContent());
-		this.updateable = false;
-
-		this.label = new PIXI.Text("RANDOM", {font:"40px barrocoregular", fill:"white"});
-		this.label.position.x = this.entityContainer.width / 2 - this.label.width / 2;
-		this.label.position.y = this.entityContainer.height / 2 - this.label.height / 2;
-		this.entityContainer.addChild(this.label);
-
-		this.labels = ["E nada vai mudar", "Sai um, entra outro", "6 por meia dúzia", "Quem vai ser o próximo?"];
-	},
-	setRandomText:function(){
-		this.entityContainer.removeChild(this.label);
-
-		this.label = new PIXI.Text(this.labels[Math.floor(Math.random()*this.labels.length)], {font:"40px barrocoregular", fill:"white"});
-		scaleConverter(this.label.width, this.imgScr.getContent().width, 0.85, this.label);
-		this.label.position.x = this.imgScr.getContent().width / 2 - this.label.width / 2;
-		this.label.position.y = this.imgScr.getContent().height / 2 - this.label.height / 1.4;
-		this.entityContainer.addChild(this.label);
-	},
-	update:function(){
-		this._super();
-	},
-	getContent:function(){
-		return this.entityContainer;
-	}
-});
-
-var Button2 = Entity.extend({
-	init:function(){
-		this.entityContainer = new PIXI.DisplayObjectContainer();
-		this.imgScr = new SimpleSprite("img/assets/modal_buttons/button_2.png");
-        this.entityContainer.addChild(this.imgScr.getContent());
-		this.updateable = false;
-		
-		this.label = new PIXI.Text("RANDOM", {font:"40px barrocoregular", fill:"white"});
-		this.label.position.x = this.entityContainer.width / 2 - this.label.width / 2;
-		this.label.position.y = this.entityContainer.height / 2 - this.label.height / 2;
-		this.entityContainer.addChild(this.label);
-
-		this.labels = ["E a CPI?","Conta na Suiça","E agora?","Golpe!"];
-	},
-	setRandomText:function(){
-		console.log(this);
-		this.entityContainer.removeChild(this.label);
-
-		this.label = new PIXI.Text(this.labels[Math.floor(Math.random()*this.labels.length)], {font:"40px barrocoregular", fill:"white"});
-		scaleConverter(this.label.width, this.imgScr.getContent().width, 0.8, this.label);
-		this.label.position.x = this.imgScr.getContent().width / 2 - this.label.width / 2;
-		this.label.position.y = this.imgScr.getContent().height / 2 - this.label.height / 1.6;
-		this.entityContainer.addChild(this.label);
-	},
-	update:function(){
-		this._super();
-	},
-	getContent:function(){
-		return this.entityContainer;
-	}
-});
-
-var Dilma = Entity.extend({
-	init:function(imgSrc, heads, positionHead){
-		this.entityContainer = new PIXI.DisplayObjectContainer();
-		this.imageDilma = new SimpleSprite(imgSrc);
-        this.entityContainer.addChild(this.imageDilma.getContent());
-        this.imageDilma.getContent().anchor.x = 0.5;
-
-        // this.imageDilma.getContent().position.y = windowHeight - this.imageDilma.getContent().height * 0.9;
-        this.velocity = {x:0,y:0};
-        this.updateable = true;
-
-        // this.minPos = this.imageDilma.getContent().width * 0.2;
-        // this.maxPos = windowWidth / 2 - this.imageDilma.getContent().width * 1.5;
-        this.side = 1;
-        this.sin = Math.random();
-
-        this.standardVel = {x:3, y:2};
-        this.virtualVel = {x:0, y:0};
-
-        this.acc = 0.1;
-
-
-
-        this.heads = [];
-        for (var i = heads.length - 1; i >= 0; i--) {
-        	tempHead = new SimpleSprite(heads[i])
-        	this.heads.push(tempHead);
-        	//this.entityContainer.addChild(tempHead.getContent());
-        	tempHead.getContent().position.x = positionHead.x;
-        };
-
-        this.currentHead(3);
-
-        scaleConverter(this.getContent().height, windowHeight, 0.5, this.getContent());
-
-        this.imageDilma.getContent().position.y = positionHead.y;
-        this.getContent().position.y = windowHeight - this.getContent().height * 0.9;
-        this.normalCounter = 0;
-	},
-	hurt:function(){
-		this.currentHead((Math.floor(Math.random() * 2) + 1));
-		this.normalCounter = 50;
-	},
-	currentHead:function(id){
-		if(this.currentId == id){
-			return;
-		}
-		this.currentId = id;
-		for (var i = this.heads.length - 1; i >= 0; i--) {
-			if(this.heads[i].getContent().parent){
-				this.heads[i].getContent().parent.removeChild(this.heads[i].getContent());
-			}
-        }
-        this.entityContainer.addChild(this.heads[id].getContent());
-	},
-	update:function(){
-
-		this.normalCounter --;
-		if(this.normalCounter <= 0){
-			this.currentHead(3);
-		}
-		this.velocity.x = this.virtualVel.x * this.side;
-
-		tempSin = Math.sin(this.sin += 0.2);
-		// console.log(tempSin)
-		this.velocity.y = this.virtualVel.y *tempSin;
-
-		accelerating = true;
-
-		if(this.getPosition().x > this.maxPos && this.side > 0){
-			this.virtualVel.x -= this.acc;
-
-			accelerating = false;
-
-			// this.side = -1;
-		}else if(this.getPosition().x < this.minPos && this.side < 0){
-			this.virtualVel.x -= this.acc;
-
-			accelerating = false;
-			// this.side = 1;
-		}
-		if(accelerating && this.virtualVel.x < this.standardVel.x){
-			this.virtualVel.x +=  this.acc;
-		}
-
-		if(this.virtualVel.y < this.standardVel.y){
-			this.virtualVel.y +=  this.acc;
-		}
-
-		this._super();
-	},
-	getContent:function(){
-		return this.entityContainer;
-	}
-});
-
-var Enemy = SpritesheetEntity.extend({
-	init:function(label){
-		this._super( true );
-        this.updateable = false;
-        this.deading = false;
-        this.standardRange = this.range = 40;
-        this.width = 0;
-        this.height = 0;
-        this.type = 'enemy';
-        this.label = label;
-        this.node = null;
-        this.life = 5;
-	},
-	debugPolygon: function(color, force){
-        this.debugPolygon = new PIXI.Graphics();
-        this.debugPolygon.beginFill(color);
-        this.debugPolygon.drawCircle(0,0,this.range);
-        this.getContent().addChild(this.debugPolygon);
-    },
-    getPosition:function(){
-        return this.getContent().position;
-    },
-	build:function(){
-		// this._super();
-
-		var self = this;
-        var motionArray = this.getFramesByRange('dragon10',0,14);
-        var animationIdle = new SpritesheetAnimation();
-        animationIdle.build('idle', motionArray, 0, true, null);
-        this.spritesheet = new Spritesheet();
-        this.spritesheet.addAnimation(animationIdle);
-        this.spritesheet.play('idle');
-        this.centerPosition = {x:0, y:0};
-        // this.centerPosition = {x:this.width/2, y:this.height/2};
-
-        this.updateable = true;
-        this.collidable = true;
-
-        this.onMouseDown = false;
-
-        this.scales = {min:1, max:2};
-
-        //this.getContent().scale.x = this.getContent().scale.y = this.scales.min + (this.scales.max - this.scales.min) / 2;
-
-        this.growFactor = 0.1;
-
-        this.getContent().interactive = true;
-        this.debugPolygon(0xFF0000,true)
-
-        this.spritesheet.update();
-	},
-	update:function(){
-		// this._super();
-        this.getContent().position.x += this.velocity.x;
-        this.getContent().position.y += this.velocity.y;
-
-        this.spritesheet.update();
-        // console.log(windowHeight);
-        if(this.getContent().position.y > windowHeight){
-            this.preKill();
-            // console.log(this.getPosition().y);
-            // this.kill = true;
-            this.velocity.y = 0;
-            // console.log("KILL");
-        }
-        this.range = this.standardRange * this.getContent().scale.x;
-	},
-	collide:function(arrayCollide){
-		// console.log(arrayCollide);
-        
-        if(this.collidable){
-            if(arrayCollide[0].type === 'enemy'){
-                // this.getContent().tint = 0xff0000;
-                // this.preKill();
-                // arrayCollide[0].hurt(this.power);
-
-            }
-        }
-    },
-    preKill:function(){
-        //this._super();
-        if(this.collidable){
-            var self = this;
-            this.updateable = false;
-            this.collidable = false;
-            TweenLite.to(this.getContent().scale, 0.3, {x:0.2, y:0.2, onComplete:function(){self.kill = true;}});
-
-        }
-    },
-});
-
-var Item = Entity.extend({
-	init:function(imgSrc){
-		this.entityContainer = new PIXI.DisplayObjectContainer();
-		this.imageDilma = new SimpleSprite(imgSrc);
-        this.entityContainer.addChild(this.imageDilma.getContent());
-
-        this.imageDilma.getContent().position.y = windowHeight - this.imageDilma.getContent().height * 0.9;
-        this.standardVelocity = {x:windowWidth * 0.3,y:0};
-        this.velocity = {x:0,y:0};
-        this.updateable = true;
-
-        this.side = 1;
-        this.sin = 0;
-
-        //this.gravity
-	},
-	update:function(){
-		this._super();
-	},
-	getContent:function(){
-		return this.entityContainer;
-	}
-});
-
-var Player = SpritesheetEntity.extend({
-	init:function(parent, label){
-		this._super( true );
-        this.updateable = false;
-        this.deading = false;
-        // this.range = 40;
-        this.range = this.standardRange = windowWidth * 0.05;
-        this.width = 0;
-        this.height = 0;
-        this.type = 'player';
-        this.subType = label;
-        this.node = null;
-        this.life = 5;
-        this.parentClass = parent;
-	},
-	debugPolygon: function(color, force){
-        // this.debugPolygon = new PIXI.Graphics();
-        // this.debugPolygon.beginFill(0xFF0000);
-        // this.debugPolygon.drawRect(0,0,this.width, this.height);
-        // this.getContent().addChild(this.debugPolygon);
-
-        this.debugPolygon = new PIXI.Graphics();
-        this.debugPolygon.beginFill(color);
-        this.debugPolygon.drawCircle(0,0,this.range);
-        this.getContent().addChild(this.debugPolygon);
-    },
-	build:function(){
-		// this._super();
-
-
-		var self = this;
-        var motionArray = this.getFramesByRange('dragon10',0,14);
-        var animationIdle = new SpritesheetAnimation();
-        animationIdle.build('idle', motionArray, 0, true, null);
-        this.spritesheet = new Spritesheet();
-        this.spritesheet.addAnimation(animationIdle);
-        this.spritesheet.play('idle');
-        this.centerPosition = {x:0, y:0};
-		this.debugPolygon(Math.random() * 0xFFFFFF,true)
-        // this.centerPosition = {x:this.width/2, y:this.height/2};
-
-
-        
-        this.updateable = true;
-        this.collidable = true;
-
-        this.onMouseDown = false;
-
-        this.scales = {min:1, max:2};
-
-        this.getContent().scale.x = this.getContent().scale.y = this.scales.min + (this.scales.max - this.scales.min) / 2;
-
-        this.growFactor = windowWidth * 0.0002;
-
-        this.getContent().interactive = true;
-        
-
-        // this.getTexture().width = 100;
-
-        console.log(this.spritesheet.container.children);
-        this.spritesheet.container.width = 200;
-        this.spritesheet.container.children[0].alpha = 0.2;
-	},
-
-	reset:function(){
-		TweenLite.killTweensOf(this.getContent());
-		this.getContent().scale.x = this.getContent().scale.y = this.scales.min + (this.scales.max - this.scales.min) / 2;
-	},
-	goTo:function(position){
-		TweenLite.to(this.getContent().position, 0.1,{x:position.x,y:position.y});
-	},
-	updateScale:function(target){
-		
-		if(target.getContent().scale.x < target.scales.max){
-
-			target.getContent().scale.x += this.growFactor;
-			target.getContent().scale.y += this.growFactor;
-
-			target.range = target.standardRange * target.getContent().scale.x;
-			// console.log(target.range);
-		}
-		//target.getContent().scale.x = target.getContent().scale.y += this.growFactor;
-		this.getContent().scale.x = this.getContent().scale.y = this.scales.min + this.scales.max - target.getContent().scale.x;		
-	},
-	update:function(){
-		this._super();
-
-		this.range = this.standardRange * this.getContent().scale.x;
-	},
-	collide:function(arrayCollide){
-		// console.log(arrayCollide);
-        // console.log('fireCollide', arrayCollide[0].type);
-        console.log(arrayCollide[0].type);
-        if(this.parentClass){
-        	this.parentClass.gameOver();
-        }
-        if(this.collidable){
-            if(arrayCollide[0].type === 'enemy'){
-                // this.getContent().tint = 0xff0000;
-                // this.preKill();
-                // arrayCollide[0].hurt(this.power);
-
-            }
-        }
-    },
-    getPosition:function(){
-    	return this.getContent().position;
-    },
-    preKill:function(){
-        //this._super();
-        if(this.collidable){
-            var self = this;
-            this.updateable = false;
-            this.collidable = false;
-            TweenLite.to(this.getContent().scale, 0.3, {x:0.2, y:0.2, onComplete:function(){self.kill = true;}});
-
-        }
-    },
-});
-
-var Pudim = Entity.extend({
-	init:function(){
-		this.entityContainer = new PIXI.DisplayObjectContainer();
-		this.graphics = new PIXI.Graphics();
-		this.graphics.beginFill(0x553388);
-		this.radius = 30;
-		this.graphics.drawCircle(0,0,this.radius);
-		this.entityContainer.addChild(this.graphics);
-		this.velocity = {x:0,y:0};
-		this.jumpForce = 8;
-		this.updateable = true;
-	},
-	jump:function(){
-		this.graphics.beginFill(Math.random() * 0xFFFFFF);
-		this.graphics.drawCircle(0,0,30);
-		this.velocity.y = -this.jumpForce;
-	},
-	update:function(){
-		this._super();
-	},
-	getContent:function(){
-		return this.entityContainer;
-	}
-});
-
-var Wall = Class.extend({
-	init:function(width, height, borderAngle){
-		this.entityContainer = new PIXI.DisplayObjectContainer();
-		this.graphics = new PIXI.Graphics();
-		this.graphics.beginFill(Math.random() * 0xFFFFFF);
-		var diagonal = Math.sin(borderAngle / 180 * Math.PI)*height;
-		this.graphics.moveTo(- diagonal,height);
-		this.graphics.lineTo(width + diagonal, height);
-		this.graphics.lineTo(width,0)
-		this.graphics.lineTo(0,0)
-
-		this.entityContainer.addChild(this.graphics);
-		this.graphics.x = - (this.graphics.width - diagonal * 2) / 2;
-		this.graphics.y = - this.graphics.height/2;
-
-		this.marker = new PIXI.Graphics();
-		this.marker.beginFill(0xFF0000);
-		this.marker.drawCircle(0,0,1);
-		this.entityContainer.addChild(this.marker);
-	},
-	update:function(){
-		//this.entityContainer.rotation += 0.01;
-	},
-	getContent:function(){
-		return this.entityContainer;
-	}
-});
-
 /*jshint undef:false */
 var Door = Entity.extend({
     init:function(side){
@@ -1406,6 +934,487 @@ var Player2 = SpritesheetEntity.extend({
     // },
 });
 
+var Ball = Class.extend({
+	init:function(){
+		this.entityContainer = new PIXI.DisplayObjectContainer();
+		this.graphics = new PIXI.Graphics();
+		this.graphics.beginFill(0x553388);
+		this.radius = 30;
+		this.graphics.drawCircle(0,0,this.radius);
+		this.entityContainer.addChild(this.graphics);
+		this.velocity = {x:0,y:0};
+		this.jumpForce = 8;
+	},
+	jump:function(){
+		this.graphics.beginFill(Math.random() * 0xFFFFFF);
+		this.graphics.drawCircle(0,0,30);
+		this.velocity.y = -this.jumpForce;
+	},
+	update:function(){
+		this.entityContainer.position.x += this.velocity.x;
+		this.entityContainer.position.y += this.velocity.y;
+	},
+	getContent:function(){
+		return this.entityContainer;
+	}
+});
+
+var Button1 = Entity.extend({
+	init:function(){
+		this.entityContainer = new PIXI.DisplayObjectContainer();
+		this.imgScr = new SimpleSprite("img/assets/modal_buttons/button_1.png");
+        this.entityContainer.addChild(this.imgScr.getContent());
+		this.updateable = false;
+
+		this.label = new PIXI.Text("RANDOM", {font:"40px barrocoregular", fill:"white"});
+		this.label.position.x = this.entityContainer.width / 2 - this.label.width / 2;
+		this.label.position.y = this.entityContainer.height / 2 - this.label.height / 2;
+		this.entityContainer.addChild(this.label);
+
+		this.labels = ["E nada vai mudar", "Sai um, entra outro", "6 por meia dúzia", "Quem vai ser o próximo?"];
+	},
+	setRandomText:function(){
+		this.entityContainer.removeChild(this.label);
+
+		this.label = new PIXI.Text(this.labels[Math.floor(Math.random()*this.labels.length)], {font:"40px barrocoregular", fill:"white"});
+		scaleConverter(this.label.width, this.imgScr.getContent().width, 0.85, this.label);
+		this.label.position.x = this.imgScr.getContent().width / 2 - this.label.width / 2;
+		this.label.position.y = this.imgScr.getContent().height / 2 - this.label.height / 1.4;
+		this.entityContainer.addChild(this.label);
+	},
+	update:function(){
+		this._super();
+	},
+	getContent:function(){
+		return this.entityContainer;
+	}
+});
+
+var Button2 = Entity.extend({
+	init:function(){
+		this.entityContainer = new PIXI.DisplayObjectContainer();
+		this.imgScr = new SimpleSprite("img/assets/modal_buttons/button_2.png");
+        this.entityContainer.addChild(this.imgScr.getContent());
+		this.updateable = false;
+		
+		this.label = new PIXI.Text("RANDOM", {font:"40px barrocoregular", fill:"white"});
+		this.label.position.x = this.entityContainer.width / 2 - this.label.width / 2;
+		this.label.position.y = this.entityContainer.height / 2 - this.label.height / 2;
+		this.entityContainer.addChild(this.label);
+
+		this.labels = ["E a CPI?","Conta na Suiça","E agora?","Golpe!"];
+	},
+	setRandomText:function(){
+		console.log(this);
+		this.entityContainer.removeChild(this.label);
+
+		this.label = new PIXI.Text(this.labels[Math.floor(Math.random()*this.labels.length)], {font:"40px barrocoregular", fill:"white"});
+		scaleConverter(this.label.width, this.imgScr.getContent().width, 0.8, this.label);
+		this.label.position.x = this.imgScr.getContent().width / 2 - this.label.width / 2;
+		this.label.position.y = this.imgScr.getContent().height / 2 - this.label.height / 1.6;
+		this.entityContainer.addChild(this.label);
+	},
+	update:function(){
+		this._super();
+	},
+	getContent:function(){
+		return this.entityContainer;
+	}
+});
+
+var Dilma = Entity.extend({
+	init:function(imgSrc, heads, positionHead){
+		this.entityContainer = new PIXI.DisplayObjectContainer();
+		this.imageDilma = new SimpleSprite(imgSrc);
+        this.entityContainer.addChild(this.imageDilma.getContent());
+        this.imageDilma.getContent().anchor.x = 0.5;
+
+        // this.imageDilma.getContent().position.y = windowHeight - this.imageDilma.getContent().height * 0.9;
+        this.velocity = {x:0,y:0};
+        this.updateable = true;
+
+        // this.minPos = this.imageDilma.getContent().width * 0.2;
+        // this.maxPos = windowWidth / 2 - this.imageDilma.getContent().width * 1.5;
+        this.side = 1;
+        this.sin = Math.random();
+
+        this.standardVel = {x:3, y:2};
+        this.virtualVel = {x:0, y:0};
+
+        this.acc = 0.1;
+
+
+
+        this.heads = [];
+        for (var i = heads.length - 1; i >= 0; i--) {
+        	tempHead = new SimpleSprite(heads[i])
+        	this.heads.push(tempHead);
+        	//this.entityContainer.addChild(tempHead.getContent());
+        	tempHead.getContent().position.x = positionHead.x;
+        };
+
+        this.currentHead(3);
+
+        scaleConverter(this.getContent().height, windowHeight, 0.5, this.getContent());
+
+        this.imageDilma.getContent().position.y = positionHead.y;
+        this.getContent().position.y = windowHeight - this.getContent().height * 0.9;
+        this.normalCounter = 0;
+	},
+	hurt:function(){
+		this.currentHead((Math.floor(Math.random() * 2) + 1));
+		this.normalCounter = 50;
+	},
+	currentHead:function(id){
+		if(this.currentId == id){
+			return;
+		}
+		this.currentId = id;
+		for (var i = this.heads.length - 1; i >= 0; i--) {
+			if(this.heads[i].getContent().parent){
+				this.heads[i].getContent().parent.removeChild(this.heads[i].getContent());
+			}
+        }
+        this.entityContainer.addChild(this.heads[id].getContent());
+	},
+	update:function(){
+
+		this.normalCounter --;
+		if(this.normalCounter <= 0){
+			this.currentHead(3);
+		}
+		this.velocity.x = this.virtualVel.x * this.side;
+
+		tempSin = Math.sin(this.sin += 0.2);
+		// console.log(tempSin)
+		this.velocity.y = this.virtualVel.y *tempSin;
+
+		accelerating = true;
+
+		if(this.getPosition().x > this.maxPos && this.side > 0){
+			this.virtualVel.x -= this.acc;
+
+			accelerating = false;
+
+			// this.side = -1;
+		}else if(this.getPosition().x < this.minPos && this.side < 0){
+			this.virtualVel.x -= this.acc;
+
+			accelerating = false;
+			// this.side = 1;
+		}
+		if(accelerating && this.virtualVel.x < this.standardVel.x){
+			this.virtualVel.x +=  this.acc;
+		}
+
+		if(this.virtualVel.y < this.standardVel.y){
+			this.virtualVel.y +=  this.acc;
+		}
+
+		this._super();
+	},
+	getContent:function(){
+		return this.entityContainer;
+	}
+});
+
+var Enemy = SpritesheetEntity.extend({
+	init:function(label){
+		this._super( true );
+        this.updateable = false;
+        this.deading = false;
+        this.standardRange = this.range = 40;
+        this.width = 0;
+        this.height = 0;
+        this.type = 'enemy';
+        this.label = label;
+        this.node = null;
+        this.life = 5;
+	},
+	debugPolygon: function(color, force){
+        this.debugPolygon = new PIXI.Graphics();
+        this.debugPolygon.beginFill(color);
+        this.debugPolygon.drawCircle(0,0,this.range);
+        this.getContent().addChild(this.debugPolygon);
+    },
+    getPosition:function(){
+        return this.getContent().position;
+    },
+	build:function(){
+		// this._super();
+
+		var self = this;
+        var motionArray = this.getFramesByRange('dragon10',0,14);
+        var animationIdle = new SpritesheetAnimation();
+        animationIdle.build('idle', motionArray, 0, true, null);
+        this.spritesheet = new Spritesheet();
+        this.spritesheet.addAnimation(animationIdle);
+        this.spritesheet.play('idle');
+        this.centerPosition = {x:0, y:0};
+        // this.centerPosition = {x:this.width/2, y:this.height/2};
+
+        this.updateable = true;
+        this.collidable = true;
+
+        this.onMouseDown = false;
+
+        this.scales = {min:1, max:2};
+
+        //this.getContent().scale.x = this.getContent().scale.y = this.scales.min + (this.scales.max - this.scales.min) / 2;
+
+        this.growFactor = 0.1;
+
+        this.getContent().interactive = true;
+        this.debugPolygon(0xFF0000,true)
+
+        this.spritesheet.update();
+	},
+	update:function(){
+		// this._super();
+        this.getContent().position.x += this.velocity.x;
+        this.getContent().position.y += this.velocity.y;
+
+        this.spritesheet.update();
+        // console.log(windowHeight);
+        if(this.getContent().position.y > windowHeight){
+            this.preKill();
+            // console.log(this.getPosition().y);
+            // this.kill = true;
+            this.velocity.y = 0;
+            // console.log("KILL");
+        }
+        this.range = this.standardRange * this.getContent().scale.x;
+	},
+	collide:function(arrayCollide){
+		// console.log(arrayCollide);
+        
+        if(this.collidable){
+            if(arrayCollide[0].type === 'enemy'){
+                // this.getContent().tint = 0xff0000;
+                // this.preKill();
+                // arrayCollide[0].hurt(this.power);
+
+            }
+        }
+    },
+    preKill:function(){
+        //this._super();
+        if(this.collidable){
+            var self = this;
+            this.updateable = false;
+            this.collidable = false;
+            TweenLite.to(this.getContent().scale, 0.3, {x:0.2, y:0.2, onComplete:function(){self.kill = true;}});
+
+        }
+    },
+});
+
+var Item = Entity.extend({
+	init:function(imgSrc){
+		this.entityContainer = new PIXI.DisplayObjectContainer();
+		this.imageDilma = new SimpleSprite(imgSrc);
+        this.entityContainer.addChild(this.imageDilma.getContent());
+
+        this.imageDilma.getContent().position.y = windowHeight - this.imageDilma.getContent().height * 0.9;
+        this.standardVelocity = {x:windowWidth * 0.3,y:0};
+        this.velocity = {x:0,y:0};
+        this.updateable = true;
+
+        this.side = 1;
+        this.sin = 0;
+
+        //this.gravity
+	},
+	update:function(){
+		this._super();
+	},
+	getContent:function(){
+		return this.entityContainer;
+	}
+});
+
+var Player = Entity.extend({
+	init:function(parent, label){
+		this._super( true );
+        this.updateable = false;
+        this.deading = false;
+        // this.range = 40;
+        this.range = this.standardRange = windowWidth * 0.05;
+        this.width = 0;
+        this.height = 0;
+        this.type = 'player';
+        this.subType = label;
+        this.node = null;
+        this.life = 5;
+        this.parentClass = parent;
+
+        this.entityContainer = new PIXI.DisplayObjectContainer();
+
+        this.debugContainer = new PIXI.DisplayObjectContainer();
+		this.entityContainer.addChild(this.debugContainer);
+
+        this.playerContainer = new PIXI.DisplayObjectContainer();
+		this.entityContainer.addChild(this.playerContainer);
+
+
+	},
+	debugPolygon: function(color, force){
+        this.debugPolygon = new PIXI.Graphics();
+        this.debugPolygon.lineStyle(0.5,color);
+        // this.debugPolygon.beginFill(color);
+        this.debugPolygon.drawCircle(0,0,this.range);
+        this.debugContainer.addChild(this.debugPolygon);
+    },
+	build:function(){
+		var self = this;
+        this.centerPosition = {x:0, y:0};
+		this.debugPolygon(Math.random() * 0xFFFFFF,true)
+        // this.centerPosition = {x:this.width/2, y:this.height/2};
+        this.updateable = true;
+        this.collidable = true;
+
+        this.onMouseDown = false;
+
+        this.scales = {min:1, max:2};
+
+        this.getContent().scale.x = this.getContent().scale.y = this.scales.min + (this.scales.max - this.scales.min) / 2;
+
+        this.growFactor = windowWidth * 0.0002;
+
+        // this.getContent().interactive = true;
+
+        this.playerImage = new SimpleSprite("img/assets/teste1.png", {x:0.5, y:0.8});
+        this.playerContainer.addChild(this.playerImage.getContent());
+        // this.playerImage.getContent().width = this.range;
+        scaleConverter(this.playerContainer.width, this.debugContainer.width, 1, this.playerContainer);
+        this.standardScale = this.playerContainer.scale;
+    },
+
+	reset:function(){
+		TweenLite.killTweensOf(this.getContent());
+		this.getContent().scale.x = this.getContent().scale.y = this.scales.min + (this.scales.max - this.scales.min) / 2;
+		
+		var self = this;
+		this.timeline = new TimelineLite({onComplete:function(){
+				self.timeline.restart();
+			}
+		});
+
+		this.timeline.add(TweenLite.to(this.playerContainer.scale, 0.3, {x:this.standardScale.x * 1.1,y:this.standardScale.y * 0.9}));
+		// this.timeline.add(TweenLite.to(this.playerContainer.scale, 0.2, {x:this.standardScale.x * 1.2,y:this.standardScale.y * 0.8}));
+		this.timeline.add(TweenLite.to(this.playerContainer.scale, 0.4, {x:this.standardScale.x * 0.9,y:this.standardScale.y * 1.1}));
+		this.timeline.add(TweenLite.to(this.playerContainer.scale, 0.2, {x:this.standardScale.x, y:this.standardScale.y}));
+
+		this.timeline.resume();
+
+	},
+	goTo:function(position){
+		TweenLite.to(this.getContent().position, 0.1,{x:position.x,y:position.y});
+	},
+	getContent:function(){
+		return this.entityContainer;
+	},
+	updateScale:function(target){
+		
+		if(target.getContent().scale.x < target.scales.max){
+
+			target.getContent().scale.x += this.growFactor;
+			target.getContent().scale.y += this.growFactor;
+
+			target.range = target.standardRange * target.getContent().scale.x;
+		}
+		//target.getContent().scale.x = target.getContent().scale.y += this.growFactor;
+		this.getContent().scale.x = this.getContent().scale.y = this.scales.min + this.scales.max - target.getContent().scale.x;		
+	},
+	update:function(){
+		this._super();
+
+		this.range = this.standardRange * this.getContent().scale.x;
+	},
+	collide:function(arrayCollide){
+		// console.log(arrayCollide);
+        // console.log('fireCollide', arrayCollide[0].type);
+        console.log(arrayCollide[0].type);
+        if(this.parentClass){
+        	this.parentClass.gameOver();
+        }
+        if(this.collidable){
+            if(arrayCollide[0].type === 'enemy'){
+                // this.getContent().tint = 0xff0000;
+                // this.preKill();
+                // arrayCollide[0].hurt(this.power);
+
+            }
+        }
+    },
+    getPosition:function(){
+    	return this.getContent().position;
+    },
+    preKill:function(){
+        //this._super();
+        if(this.collidable){
+            var self = this;
+            this.updateable = false;
+            this.collidable = false;
+            TweenLite.to(this.getContent().scale, 0.3, {x:0.2, y:0.2, onComplete:function(){self.kill = true;}});
+
+        }
+    },
+});
+
+var Pudim = Entity.extend({
+	init:function(){
+		this.entityContainer = new PIXI.DisplayObjectContainer();
+		this.graphics = new PIXI.Graphics();
+		this.graphics.beginFill(0x553388);
+		this.radius = 30;
+		this.graphics.drawCircle(0,0,this.radius);
+		this.entityContainer.addChild(this.graphics);
+		this.velocity = {x:0,y:0};
+		this.jumpForce = 8;
+		this.updateable = true;
+	},
+	jump:function(){
+		this.graphics.beginFill(Math.random() * 0xFFFFFF);
+		this.graphics.drawCircle(0,0,30);
+		this.velocity.y = -this.jumpForce;
+	},
+	update:function(){
+		this._super();
+	},
+	getContent:function(){
+		return this.entityContainer;
+	}
+});
+
+var Wall = Class.extend({
+	init:function(width, height, borderAngle){
+		this.entityContainer = new PIXI.DisplayObjectContainer();
+		this.graphics = new PIXI.Graphics();
+		this.graphics.beginFill(Math.random() * 0xFFFFFF);
+		var diagonal = Math.sin(borderAngle / 180 * Math.PI)*height;
+		this.graphics.moveTo(- diagonal,height);
+		this.graphics.lineTo(width + diagonal, height);
+		this.graphics.lineTo(width,0)
+		this.graphics.lineTo(0,0)
+
+		this.entityContainer.addChild(this.graphics);
+		this.graphics.x = - (this.graphics.width - diagonal * 2) / 2;
+		this.graphics.y = - this.graphics.height/2;
+
+		this.marker = new PIXI.Graphics();
+		this.marker.beginFill(0xFF0000);
+		this.marker.drawCircle(0,0,1);
+		this.entityContainer.addChild(this.marker);
+	},
+	update:function(){
+		//this.entityContainer.rotation += 0.01;
+	},
+	getContent:function(){
+		return this.entityContainer;
+	}
+});
+
 /*jshint undef:false */
 var AppModel = Class.extend({
 	init:function(){
@@ -1509,7 +1518,13 @@ var GameScreen = AbstractScreen.extend({
         this.updateable = false;
         this.gameContainer = new PIXI.DisplayObjectContainer();
         this.addChild(this.gameContainer);
-        var assetsToLoader = ["img/dragon.json"];
+        var assetsToLoader = ["img/assets/Blob_red.png",
+        "img/assets/ennemy_Blob_blue.png",
+        "img/assets/Floor.png",
+        "img/assets/SideWall.png",
+        "img/assets/teste1.png"
+        ];
+        // var assetsToLoader = ["img/dragon.json"];
         if(assetsToLoader.length > 0){
             this.loader = new PIXI.AssetLoader(assetsToLoader);
             this.initLoad();
@@ -1529,10 +1544,18 @@ var GameScreen = AbstractScreen.extend({
     {
         this._super();
         this.layerManager = new LayerManager();
+        this.environmentLayer = new Layer("Environment");
         this.entityLayer = new Layer("Entity");
         this.enemyLayer = new Layer("Enemy");
-        this.layerManager.addLayer(this.entityLayer);
+        this.layerManager.addLayer(this.environmentLayer);
         this.layerManager.addLayer(this.enemyLayer);
+        this.layerManager.addLayer(this.entityLayer);
+
+
+
+        this.environment = new Environment();
+        this.environmentLayer.addChild(this.environment);
+        this.environment.velocity.y = -1;
 
         var self = this;
 
@@ -1565,33 +1588,33 @@ var GameScreen = AbstractScreen.extend({
         this.gameHit.hitArea = new PIXI.Rectangle(0, 0, windowWidth, windowHeight);
 
         
-        
-    //detectar colisoes aqui pra mover depois
-        this.gameHit.mousemove = this.gameHit.touchmove = function(touchData){
-            if(!self.updateable){
-                return;
-            }
-            self.currentPosition = touchData.global;
-            if(self.touchDown){
+        {
+        //detectar colisoes aqui pra mover depois
+            this.gameHit.mousemove = this.gameHit.touchmove = function(touchData){
+                if(!self.updateable){
+                    return;
+                }
+                self.currentPosition = touchData.global;
+                if(self.touchDown){
+                    self.detectTouchCollision(touchData);
+                }
+            };
+            this.gameHit.mousedown = this.gameHit.touchstart = function(touchData){
+                if(!self.updateable){
+                    return;
+                }
+                self.currentPosition = touchData.global;
+                self.touchDown = true;
                 self.detectTouchCollision(touchData);
-            }
-        };
-        this.gameHit.mousedown = this.gameHit.touchstart = function(touchData){
-            if(!self.updateable){
-                return;
-            }
-            self.currentPosition = touchData.global;
-            self.touchDown = true;
-            self.detectTouchCollision(touchData);
-        };
-        this.gameHit.mouseup = this.gameHit.touchend = function(touchData){
-            self.label.setText("");
-            self.touchDown = false;
-            self.currentPosition = null;
-            self.selectedPlayer = null;
-            self.onReset = false;
-        };
-
+            };
+            this.gameHit.mouseup = this.gameHit.touchend = function(touchData){
+                self.label.setText("");
+                self.touchDown = false;
+                self.currentPosition = null;
+                self.selectedPlayer = null;
+                self.onReset = false;
+            };
+        }
 
         this.updateable = true;
 
@@ -1600,7 +1623,7 @@ var GameScreen = AbstractScreen.extend({
         this.players = [this.player1, this.player2];
 
 
-        this.label = new PIXI.Text("", {font:"50px Arial", fill:"red"});
+        this.label = new PIXI.Text("", {font:"20px Arial", fill:"red"});
         this.addChild(this.label);
 
 
@@ -1620,11 +1643,11 @@ var GameScreen = AbstractScreen.extend({
         this.player1.reset();
         this.player2.reset();
 
-        this.player1.getContent().position.x = this.player1.range * 2;
-        this.player1.getContent().position.y = windowHeight - this.player1.range * 2;
+        this.player1.getContent().position.x = windowWidth / 2 - this.player1.range * 2;
+        this.player1.getContent().position.y = windowHeight / 2 - this.player1.range * 2;
         
-        this.player2.getContent().position.x = windowWidth - this.player1.range * 2;
-        this.player2.getContent().position.y = windowHeight - this.player2.range * 2;
+        this.player2.getContent().position.x = windowWidth / 2 + this.player1.range * 2;
+        this.player2.getContent().position.y = windowHeight / 2 - this.player2.range * 2;
     },
     gameOver:function()
     {
@@ -1649,15 +1672,13 @@ var GameScreen = AbstractScreen.extend({
         var hasCollide = false;
         for (var i = this.players.length - 1; i >= 0; i--) {
             
-            if(!this.selectedPlayer && pointDistance(touchData.global.x, touchData.global.y,this.players[i].getContent().position.x, this.players[i].getContent().position.y) < this.players[i].range){                
+            if(!this.selectedPlayer && pointDistance(touchData.global.x, touchData.global.y,this.players[i].getContent().position.x, this.players[i].getContent().position.y) < this.players[i].range*1.5){                
                 hasCollide = true;
                 this.selectedPlayer = this.players[i];
 
                 this.currentLocalPosition = {x:touchData.global.x - this.players[i].getContent().position.x, y:touchData.global.y - this.players[i].getContent().position.y};
             }
-        };
-        // console.log(hasCollide);
-    
+        };    
     },
     updateScales:function()
     {
@@ -1686,7 +1707,7 @@ var GameScreen = AbstractScreen.extend({
             return;
         }
         if(this.layerManager){
-            this.updateEnemySpawner();
+            //this.updateEnemySpawner();
             
 
             if(this.selectedPlayer && this.touchDown){
@@ -2211,6 +2232,114 @@ var FlightEnemy = Enemy.extend({
     },
 });
 
+var Environment = Class.extend({
+	init:function(){
+		this.environmentContainer = new PIXI.DisplayObjectContainer();
+		this.assetsList = [];
+		this.velocity = {x:0,y:0};
+		this.updateable = true;
+		// console.log(this);
+
+		this.wallsScale = 0.1;
+
+		this.floor = new SimpleSprite("img/assets/Floor.png");
+		this.getContent().addChild(this.floor.getContent());
+
+		this.leftWall = new EnvironmentObject("img/assets/SideWall.png");
+		this.getContent().addChild(this.leftWall.getContent());
+
+		this.rightWall = new EnvironmentObject("img/assets/SideWall.png");
+		this.getContent().addChild(this.rightWall.getContent());
+		
+		this.rightWall.getContent().position.x = windowWidth;
+		this.rightWall.getContent().scale.x *= -1;
+
+		scaleConverter(this.floor.getContent().width, windowWidth, 1 - this.wallsScale * 2, this.floor.getContent());
+		this.floor.getContent().position.x = this.leftWall.getContent().width;
+
+		this.assetsList.push(this.rightWall);
+		this.assetsList.push(this.leftWall);
+	},
+	update:function(){
+		// console.log(this);
+		for (var i = this.assetsList.length - 1; i >= 0; i--) {
+			this.assetsList[i].velocity = this.velocity;
+			this.assetsList[i].update();
+		};
+		// this.environmentContainer.position.x += this.velocity.x;
+		// this.environmentContainer.position.y += this.velocity.y;
+	},
+	setParentLayer:function(layer){
+		this.parentLayer = layer;
+	},
+	getContent:function(){
+		return this.environmentContainer;
+	}
+});
+
+var EnvironmentObject = Class.extend({
+	init:function(imgSrc){
+		this.environmentContainer = new PIXI.DisplayObjectContainer();
+
+		this.img = new SimpleSprite(imgSrc);
+		this.wallsScale = 0.1;
+		scaleConverter(this.img.getContent().width, windowWidth, this.wallsScale, this.img.getContent());
+
+		this.assetList = [];
+
+		var totAssets = Math.ceil(windowHeight / this.img.getContent().height) + 1;
+		for (var i = 0; i < totAssets; i++) {
+			this.img = new SimpleSprite(imgSrc);
+			this.environmentContainer.addChild(this.img.getContent());
+			scaleConverter(this.img.getContent().width, windowWidth, this.wallsScale, this.img.getContent());
+			this.img.getContent().position.y = this.img.getContent().height * i - this.img.getContent().height;
+			this.assetList.push(this.img);
+		};
+
+		this.velocity = {x:0,y:0};
+		
+	},
+	update:function(){
+		for (var i = this.assetList.length - 1; i >= 0; i--) {
+			this.assetList[i].getContent().position.x += this.velocity.x;
+			this.assetList[i].getContent().position.y += this.velocity.y;
+			if(this.velocity.y > 0){
+				if(this.assetList[i].getContent().position.y + this.velocity.y > windowHeight){
+					
+					this.assetList[i].getContent().position.y = this.getMinPosition() -this.assetList[i].getContent().height + this.velocity.y;
+
+				}
+			}else if(this.velocity.y < 0){
+				if(this.assetList[i].getContent().position.y + this.velocity.y + this.assetList[i].getContent().height < 0){
+					this.assetList[i].getContent().position.y = this.getMaxPosition() + this.assetList[i].getContent().height + this.velocity.y;
+				}
+			}
+		};
+	},
+	getMaxPosition:function(){
+		var maxPosition = -999999999999;
+		for (var j = this.assetList.length - 1; j >= 0; j--) {
+			if(this.assetList[j].getContent().position.y > maxPosition){
+				maxPosition = this.assetList[j].getContent().position.y;
+			}
+		};
+		console.log(maxPosition);
+		return maxPosition
+	},
+	getMinPosition:function(){
+		var minPosition = 999999999999;
+		for (var j = this.assetList.length - 1; j >= 0; j--) {
+			if(this.assetList[j].getContent().position.y < minPosition){
+				minPosition = this.assetList[j].getContent().position.y;
+			}
+		};
+		return minPosition
+	},
+	getContent:function(){
+		return this.environmentContainer;
+	}
+});
+
 /*jshint undef:false */
 var DefaultBehaviour = Class.extend({
     init: function (entity, player){
@@ -2309,7 +2438,7 @@ windowHeight = window.innerHeight;// * 2;//1334;
 var renderer;
 var windowWidthVar = screen.width;
 windowHeightVar = screen.height;
-var retina = 1;
+var retina = 2;
 
 var renderer = PIXI.autoDetectRecommendedRenderer(windowWidth, windowHeight, {antialias:true, resolution:retina});
 document.body.appendChild(renderer.view);

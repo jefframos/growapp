@@ -11,7 +11,13 @@ var GameScreen = AbstractScreen.extend({
         this.updateable = false;
         this.gameContainer = new PIXI.DisplayObjectContainer();
         this.addChild(this.gameContainer);
-        var assetsToLoader = ["img/dragon.json"];
+        var assetsToLoader = ["img/assets/Blob_red.png",
+        "img/assets/ennemy_Blob_blue.png",
+        "img/assets/Floor.png",
+        "img/assets/SideWall.png",
+        "img/assets/teste1.png"
+        ];
+        // var assetsToLoader = ["img/dragon.json"];
         if(assetsToLoader.length > 0){
             this.loader = new PIXI.AssetLoader(assetsToLoader);
             this.initLoad();
@@ -31,10 +37,18 @@ var GameScreen = AbstractScreen.extend({
     {
         this._super();
         this.layerManager = new LayerManager();
+        this.environmentLayer = new Layer("Environment");
         this.entityLayer = new Layer("Entity");
         this.enemyLayer = new Layer("Enemy");
-        this.layerManager.addLayer(this.entityLayer);
+        this.layerManager.addLayer(this.environmentLayer);
         this.layerManager.addLayer(this.enemyLayer);
+        this.layerManager.addLayer(this.entityLayer);
+
+
+
+        this.environment = new Environment();
+        this.environmentLayer.addChild(this.environment);
+        this.environment.velocity.y = -1;
 
         var self = this;
 
@@ -67,33 +81,33 @@ var GameScreen = AbstractScreen.extend({
         this.gameHit.hitArea = new PIXI.Rectangle(0, 0, windowWidth, windowHeight);
 
         
-        
-    //detectar colisoes aqui pra mover depois
-        this.gameHit.mousemove = this.gameHit.touchmove = function(touchData){
-            if(!self.updateable){
-                return;
-            }
-            self.currentPosition = touchData.global;
-            if(self.touchDown){
+        {
+        //detectar colisoes aqui pra mover depois
+            this.gameHit.mousemove = this.gameHit.touchmove = function(touchData){
+                if(!self.updateable){
+                    return;
+                }
+                self.currentPosition = touchData.global;
+                if(self.touchDown){
+                    self.detectTouchCollision(touchData);
+                }
+            };
+            this.gameHit.mousedown = this.gameHit.touchstart = function(touchData){
+                if(!self.updateable){
+                    return;
+                }
+                self.currentPosition = touchData.global;
+                self.touchDown = true;
                 self.detectTouchCollision(touchData);
-            }
-        };
-        this.gameHit.mousedown = this.gameHit.touchstart = function(touchData){
-            if(!self.updateable){
-                return;
-            }
-            self.currentPosition = touchData.global;
-            self.touchDown = true;
-            self.detectTouchCollision(touchData);
-        };
-        this.gameHit.mouseup = this.gameHit.touchend = function(touchData){
-            self.label.setText("");
-            self.touchDown = false;
-            self.currentPosition = null;
-            self.selectedPlayer = null;
-            self.onReset = false;
-        };
-
+            };
+            this.gameHit.mouseup = this.gameHit.touchend = function(touchData){
+                self.label.setText("");
+                self.touchDown = false;
+                self.currentPosition = null;
+                self.selectedPlayer = null;
+                self.onReset = false;
+            };
+        }
 
         this.updateable = true;
 
@@ -102,7 +116,7 @@ var GameScreen = AbstractScreen.extend({
         this.players = [this.player1, this.player2];
 
 
-        this.label = new PIXI.Text("", {font:"50px Arial", fill:"red"});
+        this.label = new PIXI.Text("", {font:"20px Arial", fill:"red"});
         this.addChild(this.label);
 
 
@@ -122,11 +136,11 @@ var GameScreen = AbstractScreen.extend({
         this.player1.reset();
         this.player2.reset();
 
-        this.player1.getContent().position.x = this.player1.range * 2;
-        this.player1.getContent().position.y = windowHeight - this.player1.range * 2;
+        this.player1.getContent().position.x = windowWidth / 2 - this.player1.range * 2;
+        this.player1.getContent().position.y = windowHeight / 2 - this.player1.range * 2;
         
-        this.player2.getContent().position.x = windowWidth - this.player1.range * 2;
-        this.player2.getContent().position.y = windowHeight - this.player2.range * 2;
+        this.player2.getContent().position.x = windowWidth / 2 + this.player1.range * 2;
+        this.player2.getContent().position.y = windowHeight / 2 - this.player2.range * 2;
     },
     gameOver:function()
     {
@@ -151,15 +165,13 @@ var GameScreen = AbstractScreen.extend({
         var hasCollide = false;
         for (var i = this.players.length - 1; i >= 0; i--) {
             
-            if(!this.selectedPlayer && pointDistance(touchData.global.x, touchData.global.y,this.players[i].getContent().position.x, this.players[i].getContent().position.y) < this.players[i].range){                
+            if(!this.selectedPlayer && pointDistance(touchData.global.x, touchData.global.y,this.players[i].getContent().position.x, this.players[i].getContent().position.y) < this.players[i].range*1.5){                
                 hasCollide = true;
                 this.selectedPlayer = this.players[i];
 
                 this.currentLocalPosition = {x:touchData.global.x - this.players[i].getContent().position.x, y:touchData.global.y - this.players[i].getContent().position.y};
             }
-        };
-        // console.log(hasCollide);
-    
+        };    
     },
     updateScales:function()
     {
@@ -188,7 +200,7 @@ var GameScreen = AbstractScreen.extend({
             return;
         }
         if(this.layerManager){
-            this.updateEnemySpawner();
+            //this.updateEnemySpawner();
             
 
             if(this.selectedPlayer && this.touchDown){

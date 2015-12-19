@@ -47,7 +47,7 @@ windowHeight = window.innerHeight;// * 2;//1334;
 var renderer;
 var windowWidthVar = screen.width;
 windowHeightVar = screen.height;
-var retina = 1;
+var retina = 2;
 
 var renderer = PIXI.autoDetectRecommendedRenderer(windowWidth, windowHeight, {antialias:true, resolution:retina});
 document.body.appendChild(renderer.view);

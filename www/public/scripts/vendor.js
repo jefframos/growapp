@@ -955,7 +955,7 @@ var ArrayUtils = {
 }
 
 var SimpleSprite =  Class.extend({
-	init:function(img){
+	init:function(img, anchor){
 		if(typeof(img) === "string")
 		{
 			this.texture = new PIXI.Texture.fromImage(img);
@@ -964,6 +964,10 @@ var SimpleSprite =  Class.extend({
 			this.texture = img;
 
 		this.container = new PIXI.Sprite(this.texture);
+		if(anchor){
+			this.container.anchor = anchor;
+			// console.log(anchor);
+		}
 	},
 	getContent:function(){
 		return this.container;

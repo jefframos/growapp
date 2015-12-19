@@ -1,4 +1,4 @@
-var Player = SpritesheetEntity.extend({
+var Player = Entity.extend({
 	init:function(parent, label){
 		this._super( true );
         this.updateable = false;
@@ -12,35 +12,29 @@ var Player = SpritesheetEntity.extend({
         this.node = null;
         this.life = 5;
         this.parentClass = parent;
+
+        this.entityContainer = new PIXI.DisplayObjectContainer();
+
+        this.debugContainer = new PIXI.DisplayObjectContainer();
+		this.entityContainer.addChild(this.debugContainer);
+
+        this.playerContainer = new PIXI.DisplayObjectContainer();
+		this.entityContainer.addChild(this.playerContainer);
+
+
 	},
 	debugPolygon: function(color, force){
-        // this.debugPolygon = new PIXI.Graphics();
-        // this.debugPolygon.beginFill(0xFF0000);
-        // this.debugPolygon.drawRect(0,0,this.width, this.height);
-        // this.getContent().addChild(this.debugPolygon);
-
         this.debugPolygon = new PIXI.Graphics();
-        this.debugPolygon.beginFill(color);
+        this.debugPolygon.lineStyle(0.5,color);
+        // this.debugPolygon.beginFill(color);
         this.debugPolygon.drawCircle(0,0,this.range);
-        this.getContent().addChild(this.debugPolygon);
+        this.debugContainer.addChild(this.debugPolygon);
     },
 	build:function(){
-		// this._super();
-
-
 		var self = this;
-        var motionArray = this.getFramesByRange('dragon10',0,14);
-        var animationIdle = new SpritesheetAnimation();
-        animationIdle.build('idle', motionArray, 0, true, null);
-        this.spritesheet = new Spritesheet();
-        this.spritesheet.addAnimation(animationIdle);
-        this.spritesheet.play('idle');
         this.centerPosition = {x:0, y:0};
 		this.debugPolygon(Math.random() * 0xFFFFFF,true)
         // this.centerPosition = {x:this.width/2, y:this.height/2};
-
-
-        
         this.updateable = true;
         this.collidable = true;
 
@@ -52,22 +46,38 @@ var Player = SpritesheetEntity.extend({
 
         this.growFactor = windowWidth * 0.0002;
 
-        this.getContent().interactive = true;
-        
+        // this.getContent().interactive = true;
 
-        // this.getTexture().width = 100;
-
-        console.log(this.spritesheet.container.children);
-        this.spritesheet.container.width = 200;
-        this.spritesheet.container.children[0].alpha = 0.2;
-	},
+        this.playerImage = new SimpleSprite("img/assets/teste1.png", {x:0.5, y:0.8});
+        this.playerContainer.addChild(this.playerImage.getContent());
+        // this.playerImage.getContent().width = this.range;
+        scaleConverter(this.playerContainer.width, this.debugContainer.width, 1, this.playerContainer);
+        this.standardScale = this.playerContainer.scale;
+    },
 
 	reset:function(){
 		TweenLite.killTweensOf(this.getContent());
 		this.getContent().scale.x = this.getContent().scale.y = this.scales.min + (this.scales.max - this.scales.min) / 2;
+		
+		var self = this;
+		this.timeline = new TimelineLite({onComplete:function(){
+				self.timeline.restart();
+			}
+		});
+
+		this.timeline.add(TweenLite.to(this.playerContainer.scale, 0.3, {x:this.standardScale.x * 1.1,y:this.standardScale.y * 0.9}));
+		// this.timeline.add(TweenLite.to(this.playerContainer.scale, 0.2, {x:this.standardScale.x * 1.2,y:this.standardScale.y * 0.8}));
+		this.timeline.add(TweenLite.to(this.playerContainer.scale, 0.4, {x:this.standardScale.x * 0.9,y:this.standardScale.y * 1.1}));
+		this.timeline.add(TweenLite.to(this.playerContainer.scale, 0.2, {x:this.standardScale.x, y:this.standardScale.y}));
+
+		this.timeline.resume();
+
 	},
 	goTo:function(position){
 		TweenLite.to(this.getContent().position, 0.1,{x:position.x,y:position.y});
+	},
+	getContent:function(){
+		return this.entityContainer;
 	},
 	updateScale:function(target){
 		
@@ -77,7 +87,6 @@ var Player = SpritesheetEntity.extend({
 			target.getContent().scale.y += this.growFactor;
 
 			target.range = target.standardRange * target.getContent().scale.x;
-			// console.log(target.range);
 		}
 		//target.getContent().scale.x = target.getContent().scale.y += this.growFactor;
 		this.getContent().scale.x = this.getContent().scale.y = this.scales.min + this.scales.max - target.getContent().scale.x;		
