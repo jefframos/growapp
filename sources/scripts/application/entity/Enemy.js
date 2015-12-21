@@ -16,7 +16,7 @@ var Enemy = Entity.extend({
         this.debugContainer = new PIXI.DisplayObjectContainer();
         this.entityContainer.addChild(this.debugContainer);
 
-        this.debugPolygon(0xFF0000,true)
+        // this.debugPolygon(0xFF0000,true)
 
         this.playerContainer = new PIXI.DisplayObjectContainer();
         this.entityContainer.addChild(this.playerContainer);
@@ -24,7 +24,8 @@ var Enemy = Entity.extend({
         this.playerImage = new SimpleSprite("img/assets/Blob_red.png", {x:0.5, y:0.5});
         this.playerContainer.addChild(this.playerImage.getContent());
         // this.playerImage.getContent().width = this.range;
-        scaleConverter(this.playerContainer.width, this.debugContainer.width, 1, this.playerContainer);
+        // scaleConverter(this.playerContainer.width, this.debugContainer.width, 1, this.playerContainer);
+        scaleConverter(this.playerContainer.width, this.range * 2, 1, this.playerContainer);
         this.standardScale = this.playerContainer.scale;
 	},
 	debugPolygon: function(color, force){

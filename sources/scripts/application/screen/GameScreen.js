@@ -39,10 +39,12 @@ var GameScreen = AbstractScreen.extend({
         this.layerManager = new LayerManager();
         this.environmentLayer = new Layer("Environment");
         this.entityLayer = new Layer("Entity");
+        this.fireLayer = new Layer("Fire");
         this.enemyLayer = new Layer("Enemy");
         this.layerManager.addLayer(this.environmentLayer);
         this.layerManager.addLayer(this.enemyLayer);
         this.layerManager.addLayer(this.entityLayer);
+        this.layerManager.addLayer(this.fireLayer);
 
         this.verticalSpeed = windowHeight * 0.005;
 
@@ -53,11 +55,11 @@ var GameScreen = AbstractScreen.extend({
         }
         this.environment = new Environment(configEnvironment);
         this.environmentLayer.addChild(this.environment);
-        this.environment.velocity.y = -this.verticalSpeed;
+        this.environment.velocity.y = this.verticalSpeed;
 
         var self = this;
 
-        this.player1 = new Player(this,"PLAYER1");
+        this.player1 = new Player(this,"PLAYER1",this.fireLayer);
         this.player1.build();
         this.entityLayer.addChild(this.player1);
         this.player1.getContent().position.x = windowWidth/2;
@@ -65,8 +67,8 @@ var GameScreen = AbstractScreen.extend({
 
 
 
-        this.player2 = new Player(this,"PLAYER2");
-        this.player2.build();
+        this.player2 = new Player(this,"PLAYER2",this.fireLayer);
+        this.player2.build();     
         this.entityLayer.addChild(this.player2);
         this.player2.getContent().position.x = windowWidth/1.5;
         this.player2.getContent().position.y = windowHeight/1.5;
@@ -85,35 +87,48 @@ var GameScreen = AbstractScreen.extend({
         this.gameHit.alpha = 0.1;
         this.gameHit.hitArea = new PIXI.Rectangle(0, 0, windowWidth, windowHeight);
 
-        
-        {
-        //detectar colisoes aqui pra mover depois
-            this.gameHit.mousemove = this.gameHit.touchmove = function(touchData){
-                if(!self.updateable){
-                    return;
-                }
-                self.currentPosition = touchData.global;
-                if(self.touchDown){
-                    self.detectTouchCollision(touchData);
-                }
-            };
-            this.gameHit.mousedown = this.gameHit.touchstart = function(touchData){
-                if(!self.updateable){
-                    return;
-                }
-                self.onReset = false;
-                self.currentPosition = touchData.global;
-                self.touchDown = true;
-                self.detectTouchCollision(touchData);
-            };
-            this.gameHit.mouseup = this.gameHit.touchend = function(touchData){
-                self.label.setText("");
-                self.touchDown = false;
-                self.currentPosition = null;
-                self.selectedPlayer = null;
-                self.onReset = false;
-            };
-        }
+
+        // use the mousedown and touchstart
+
+        // {
+        // //detectar colisoes aqui pra mover depois
+        //     this.gameHit.mousemove = this.gameHit.touchmove = function(touchData){
+        //         if(!self.updateable){
+        //             return;
+        //         }
+        //         self.currentPosition = touchData.global;
+        //         if(self.touchDown){
+        //             self.detectTouchCollision(touchData);
+        //         }
+        //     };
+        //     this.gameHit.mousedown = this.gameHit.touchstart = function(touchData){
+        //         if(!self.updateable){
+        //             return;
+        //         }
+        //         self.onReset = false;
+        //         self.currentPosition = touchData.global;
+        //         self.touchDown = true;
+        //         self.detectTouchCollision(touchData);
+
+        //         // var touch = {
+        //         //     id: event.data.identifier,
+        //         //     pos: event.data.getLocalPosition(this.view)
+        //         // };
+
+        //         self.label.setText(touchData);
+        //         console.log(touchData);
+        //         self.touches.push(touchData);
+        //     };
+        //     this.gameHit.mouseup = this.gameHit.touchend = function(touchData){
+        //         self.label.setText("");
+        //         self.touchDown = false;
+        //         self.currentPosition = null;
+        //         self.selectedPlayer = null;
+        //         self.onReset = false;
+        //     };
+        // }
+
+        this.selecteds = [];
 
         this.updateable = true;
 
@@ -124,6 +139,10 @@ var GameScreen = AbstractScreen.extend({
 
         this.label = new PIXI.Text("", {font:"20px Arial", fill:"red"});
         this.addChild(this.label);
+
+        this.label2 = new PIXI.Text("", {font:"20px Arial", fill:"red"});
+        this.addChild(this.label2);
+        this.label2.position.y = 200;
 
 
 
@@ -138,6 +157,7 @@ var GameScreen = AbstractScreen.extend({
         this.player1.reset();
         this.player2.reset();
 
+
         this.enemyCounter = this.verticalSpeed;
         this.maxEnemyCounter = this.verticalSpeed * this.player1.standardRange// * this.player1.scales.max;
         // console.log(this.verticalSpeed , this.player1.standardScale , this.player1.scales.max , 1.5);
@@ -147,10 +167,10 @@ var GameScreen = AbstractScreen.extend({
         this.updateable = true;
 
         this.player1.getContent().position.x = windowWidth / 2 - this.player1.range * 2;
-        this.player1.getContent().position.y = this.player1.range * 4;
+        this.player1.getContent().position.y = windowHeight - this.player1.range * 4;
         
         this.player2.getContent().position.x = windowWidth / 2 + this.player1.range * 2;
-        this.player2.getContent().position.y = this.player2.range * 4;
+        this.player2.getContent().position.y = windowHeight - this.player2.range * 4;
     },
     gameOver:function()
     {
@@ -186,9 +206,9 @@ var GameScreen = AbstractScreen.extend({
     },
     updateScales:function()
     {
-        if(this.selectedPlayer.subType == this.player2.subType){
+        if(this.selecteds[0].subType == this.player2.subType){
             this.player1.updateScale(this.player2);
-        }else if(this.selectedPlayer.subType == this.player1.subType){
+        }else if(this.selecteds[0].subType == this.player1.subType){
             this.player2.updateScale(this.player1);
         }
     },
@@ -208,39 +228,82 @@ var GameScreen = AbstractScreen.extend({
             this.enemyCounter --;
         }
     },
+    addSelected:function(entity){
+        var has = false;
+        for (var i = this.selecteds.length - 1; i >= 0; i--) {
+            if(this.selecteds[i] == entity){
+                has = true;
+            }
+        };
+        if(!has){
+            this.selecteds.push(entity);
+        }
+    },
+    removeSelected:function(entity){
+        for (var i = 0; i < this.selecteds.length; i++) {
+            if(this.selecteds[i] == entity){
+                this.selecteds.splice(i, 1);
+            }
+        };
+    },
     update:function()
     {
         if(!this.updateable){
             return;
         }
         if(this.layerManager){
-            this.updateEnemySpawner();
-            
-
-            if(this.selectedPlayer && this.touchDown && this.currentPosition.x + this.currentPosition.y > 0){
-                this.label.setText(this.selectedPlayer.subType);
-                targetPosition = {x:this.currentPosition.x - this.currentLocalPosition.x, y:this.currentPosition.y - this.currentLocalPosition.y}
-                // console.log(targetPosition);
-                if(targetPosition.x - this.selectedPlayer.range < (this.environment.model.leftWallScale * windowWidth)){
-                    targetPosition.x = this.environment.model.leftWallScale * windowWidth + this.selectedPlayer.range;
-                }else if(targetPosition.x + this.selectedPlayer.range > ((1 - this.environment.model.rightWallScale) * windowWidth)){
-                    targetPosition.x = ((1 - this.environment.model.rightWallScale) * windowWidth) - this.selectedPlayer.range
-                }
-
-                this.selectedPlayer.goTo(targetPosition);
-                this.updateScales();
-
+            // this.updateEnemySpawner();
+            if(this.player1.mouseDown){
+                this.addSelected(this.player1);
             }else{
-                this.label.setText("");
+                this.removeSelected(this.player1);
             }
+            if(this.player2.mouseDown){
+                this.addSelected(this.player2);
+            }else{
+                this.removeSelected(this.player2);
+            }
+            if(this.selecteds.length == 1){
+                this.updateScales();
+                if(this.selecteds[0].subType === this.player1.subType){
+                    this.player2.shoot();
+                }else{
+                    this.player1.shoot();                    
+                }
+            }else if(this.selecteds.length == 2){
+                for (var i = this.selecteds.length - 1; i >= 0; i--) {
+                    this.selecteds[i].toAverrageScale();
+                };
+            }
+            this.updateCollisions();
+
             this.layerManager.update();
 
-            this.entityLayer.collideChilds(this.player1);
-            // this.entityLayer.collideChilds(this.player2);
-
-
-            this.enemyLayer.collideChilds(this.player2);
-            this.enemyLayer.collideChilds(this.player1);
+            
         }
+
     },
+    updateCollisions:function()
+    {
+        var hasCollision;
+        for (var i = this.selecteds.length - 1; i >= 0; i--) {            
+            tempPlayer = this.selecteds[i];
+            hasCollision = false;
+            targetPosition = {x:tempPlayer.getPosition().x, y:tempPlayer.getPosition().y}
+            // console.log(targetPosition);
+            if(targetPosition.x - tempPlayer.range < (this.environment.model.leftWallScale * windowWidth)){
+                hasCollision = true;
+                targetPosition.x = this.environment.model.leftWallScale * windowWidth + tempPlayer.range;
+            }else if(targetPosition.x + tempPlayer.range > ((1 - this.environment.model.rightWallScale) * windowWidth)){
+                hasCollision = true;
+                targetPosition.x = ((1 - this.environment.model.rightWallScale) * windowWidth) - tempPlayer.range
+            }
+            if(hasCollision){
+                tempPlayer.goTo(targetPosition, true);
+            }
+        }
+        this.entityLayer.collideChilds(this.player1);
+        this.enemyLayer.collideChilds(this.player2);
+        this.enemyLayer.collideChilds(this.player1);
+    }
 });

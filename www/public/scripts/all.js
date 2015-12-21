@@ -227,7 +227,7 @@ var Enemy = Entity.extend({
         this.debugContainer = new PIXI.DisplayObjectContainer();
         this.entityContainer.addChild(this.debugContainer);
 
-        this.debugPolygon(0xFF0000,true)
+        // this.debugPolygon(0xFF0000,true)
 
         this.playerContainer = new PIXI.DisplayObjectContainer();
         this.entityContainer.addChild(this.playerContainer);
@@ -235,7 +235,8 @@ var Enemy = Entity.extend({
         this.playerImage = new SimpleSprite("img/assets/Blob_red.png", {x:0.5, y:0.5});
         this.playerContainer.addChild(this.playerImage.getContent());
         // this.playerImage.getContent().width = this.range;
-        scaleConverter(this.playerContainer.width, this.debugContainer.width, 1, this.playerContainer);
+        // scaleConverter(this.playerContainer.width, this.debugContainer.width, 1, this.playerContainer);
+        scaleConverter(this.playerContainer.width, this.range * 2, 1, this.playerContainer);
         this.standardScale = this.playerContainer.scale;
 	},
 	debugPolygon: function(color, force){
@@ -324,7 +325,7 @@ var Item = Entity.extend({
 });
 
 var Player = Entity.extend({
-	init:function(parent, label){
+	init:function(parent, label, fireLayer){
 		this._super( true );
         this.updateable = false;
         this.deading = false;
@@ -337,11 +338,12 @@ var Player = Entity.extend({
         this.node = null;
         this.life = 5;
         this.parentClass = parent;
+        this.fireLayer = fireLayer;
 
         this.entityContainer = new PIXI.DisplayObjectContainer();
 
-        this.debugContainer = new PIXI.DisplayObjectContainer();
-		this.entityContainer.addChild(this.debugContainer);
+        this.hitContainer = new PIXI.DisplayObjectContainer();
+		this.entityContainer.addChild(this.hitContainer);
 
         this.playerContainer = new PIXI.DisplayObjectContainer();
 		this.entityContainer.addChild(this.playerContainer);
@@ -352,16 +354,62 @@ var Player = Entity.extend({
 
 		this.playerImage = new SimpleSprite("img/assets/teste1.png", {x:0.5, y:0.8});
         this.playerContainer.addChild(this.playerImage.getContent());
+
+        this.getContent().interactive = true;
+        this.hitContainer.interactive = true;
+        console.log(this.getContent().hitArea)
+        // this.getContent().hitArea = new PIXI.Rectangle(-this.range*2,-this.range*2,this.range*2, this.range*2);
         // this.playerImage.getContent().width = this.range;
+
+
+        this.mouseDown = false;
+        var self = this;
+        this.hitContainer.mousedown = this.hitContainer.touchstart = function(data)
+        {
+    //      data.originalEvent.preventDefault()
+            // store a refference to the data
+            // The reason for this is because of multitouch
+            // we want to track the movement of this particular touch
+            this.data = data;
+            // this.alpha = 0.9;
+            this.dragging = true;
+            self.mouseDown = true;
+        };
+        
+        // set the events for when the mouse is released or a touch is released
+        
+        this.hitContainer.mouseup = this.hitContainer.mouseupoutside = this.hitContainer.touchend = this.hitContainer.touchendoutside = function(data)
+        {
+            // this.alpha = 1
+            this.dragging = false;
+            // set the interaction data to null
+            this.data = null;
+            self.mouseDown = false;
+        };
+        
+        // set the callbacks for when the mouse or a touch moves
+        
+        this.hitContainer.mousemove = this.hitContainer.touchmove = function(data)
+        {
+            if(this.dragging)
+            {
+                var newPosition = this.data.getLocalPosition(self.getContent().parent);
+                // console.log(newPosition, self.getPosition());
+                newPosition.x -=  self.getPosition().x - newPosition.x;
+                newPosition.y -=  self.getPosition().y - newPosition.y;
+                self.goTo(newPosition);
+            }
+        }
         
 
 	},
 	debugPolygon: function(color, force){
         this.debugPolygon = new PIXI.Graphics();
-        this.debugPolygon.lineStyle(0.5,color);
-        // this.debugPolygon.beginFill(color);
-        this.debugPolygon.drawCircle(0,0,this.range);
-        this.debugContainer.addChild(this.debugPolygon);
+        // this.debugPolygon.lineStyle(0.5,color);
+        this.debugPolygon.beginFill(color);
+        this.debugPolygon.drawCircle(0,0,this.range * 1.3);
+        this.debugPolygon.alpha = 0;
+        this.hitContainer.addChild(this.debugPolygon);
     },
 	build:function(){
 		var self = this;
@@ -374,28 +422,29 @@ var Player = Entity.extend({
 
         this.scales = {min:1, max:1.8};
 
-        this.getContent().scale.x = this.getContent().scale.y = this.scales.min + (this.scales.max - this.scales.min) / 2;
+        this.averrageScale = this.scales.min + (this.scales.max - this.scales.min) / 2;
+
+        this.getContent().scale.x = this.getContent().scale.y = this.averrageScale;
 
         this.growFactor = windowWidth * 0.0002;
 
-        scaleConverter(this.playerContainer.width, this.debugContainer.width, 1, this.playerContainer);
-        // if(this.standardScale == null){
-        	this.standardScale = {x:0,y:0};
-        	this.standardScale.x = this.playerContainer.scale.x;
-        	this.standardScale.y = this.playerContainer.scale.y;
-        	// console.log("CHANGE");
-        // }
-        // this.getContent().interactive = true;
+        scaleConverter(this.playerContainer.width, this.range * 2, 1, this.playerContainer);
+
+    	this.standardScale = {x:0,y:0};
+    	this.standardScale.x = this.playerContainer.scale.x;
+    	this.standardScale.y = this.playerContainer.scale.y;
 
     },
 
 	reset:function(){
+		this.shootAcum = 0;
+		this.shootMaxAcum = 50;
 		// TweenLite.killTweensOf(this.getContent());
 		// TweenLite.killTweensOf(this.playerContainer);
 		// TweenLite.killTweensOf(this.playerContainer.scale);
-		this.getContent().scale.x = this.getContent().scale.y = this.scales.min + (this.scales.max - this.scales.min) / 2;
+		this.getContent().scale.x = this.getContent().scale.y = this.averrageScale;
 		// // console.log(this.playerContainer.children.length);
-		// //scaleConverter(this.playerContainer.width, this.debugContainer.width, 1, this.playerContainer);
+		// //scaleConverter(this.playerContainer.width, this.hitContainer.width, 1, this.playerContainer);
 		// console.log("lll",this.standardScale);
 		// // this.playerContainer.scale = this.standardScale;
 		// var self = this;
@@ -416,11 +465,20 @@ var Player = Entity.extend({
 		// this.timeline.resume();
 
 	},
-	goTo:function(position){
-		TweenLite.to(this.getContent().position, 0.1,{x:position.x,y:position.y});
+	goTo:function(position, force){
+		if(force){
+			this.getContent().position.x = position.x;
+			this.getContent().position.y = position.y;
+		}else{
+			TweenLite.to(this.getContent().position, 0.05,{x:position.x,y:position.y});
+		}
 	},
 	getContent:function(){
 		return this.entityContainer;
+	},
+	toAverrageScale:function(){
+
+		TweenLite.to(this.getContent().scale, 0.1,{x:this.averrageScale,y:this.averrageScale});
 	},
 	updateScale:function(target){
 		
@@ -434,9 +492,21 @@ var Player = Entity.extend({
 		//target.getContent().scale.x = target.getContent().scale.y += this.growFactor;
 		this.getContent().scale.x = this.getContent().scale.y = this.scales.min + this.scales.max - target.getContent().scale.x;		
 	},
+	shoot:function(){
+		if(this.shootAcum <= 0){
+			console.log("this");
+			this.shootAcum = this.shootMaxAcum;
+			var fire = new Fire({x:0, y:-4});
+			fire.build();
+			fire.setPosition(this.getPosition().x, this.getPosition().y);
+			this.fireLayer.addChild(fire);
+		}
+	},
 	update:function(){
 		this._super();
-
+		if(this.shootAcum > 0){
+			this.shootAcum --;
+		}
 		this.range = this.standardRange * this.getContent().scale.x;
 	},
 	collide:function(arrayCollide){
@@ -614,75 +684,43 @@ var Door = Entity.extend({
 /*jshint undef:false */
 var Fire = Entity.extend({
     init:function(vel){
+        console.log(vel);
         this._super( true );
         this.updateable = false;
         this.deading = false;
-        this.range = 60;
+        this.range = windowWidth * 0.02;
         this.width = 1;
         this.height = 1;
         this.type = 'fire';
         this.node = null;
         this.velocity.x = vel.x;
         this.velocity.y = vel.y;
-        this.timeLive = 10;
+        this.timeLive = 100;
         this.power = 1;
         this.defaultVelocity = 1;
+        this.entityContainer = new PIXI.DisplayObjectContainer();
+        this.hitContainer = new PIXI.DisplayObjectContainer();
+        this.entityContainer.addChild(this.hitContainer);
 
-    },
-    getBounds: function(){
-        this.bounds = {x: this.getPosition().x-this.width/2, y: this.getPosition().y-this.height/2, w: this.width, h: this.height};
-        this.centerPosition = {x:this.width/2, y:this.height/2};
-
-        this.collisionPoints = {
-            up:{x:this.bounds.x + this.bounds.w / 2, y:this.bounds.y},
-            down:{x:this.bounds.x + this.bounds.w / 2, y:this.bounds.y + this.bounds.h},
-            bottomLeft:{x:this.bounds.x, y:this.bounds.y+this.bounds.h},
-            topLeft:{x:this.bounds.x, y:this.bounds.y},
-            bottomRight:{x:this.bounds.x + this.bounds.w, y:this.bounds.y+this.bounds.h},
-            topRight:{x:this.bounds.x + this.bounds.w, y:this.bounds.y}
-        };
-        this.polygon = new PIXI.Polygon(new PIXI.Point(this.bounds.x + this.bounds.w / 2, this.bounds.y),
-            new PIXI.Point(this.bounds.x, this.bounds.y),
-            new PIXI.Point(this.bounds.x, this.bounds.y+this.bounds.h),
-            new PIXI.Point(this.bounds.x + this.bounds.w / 2, this.bounds.y + this.bounds.h),
-            new PIXI.Point(this.bounds.x + this.bounds.w, this.bounds.y+this.bounds.h),
-            new PIXI.Point(this.bounds.x + this.bounds.w, this.bounds.y));
-        return this.bounds;
     },
     debugPolygon: function(color, force){
-        if(this.lastColorDebug !== color || force){
-            if(this.debugGraphic.parent === null && this.getContent().parent !== null)
-            {
-                this.getContent().parent.addChild(this.debugGraphic);
-            }
-            this.lastColorDebug = color;
-            this.gambAcum ++;
-            if(this.debugGraphic !== undefined){
-                this.debugGraphic.clear();
-            }else{
-                this.debugGraphic = new PIXI.Graphics();
-            }
-            // console.log(this.polygon);
-            this.debugGraphic.beginFill(color, 0.5);
-            this.debugGraphic.lineStyle(1, 0xffd900);
-            this.debugGraphic.moveTo(this.polygon.points[this.polygon.points.length - 1].x,this.polygon.points[this.polygon.points.length - 1].y);
-            // console.log('this.polygon',this.polygon.points);
-
-            for (var i = this.polygon.points.length - 2; i >= 0; i--) {
-                this.debugGraphic.lineTo(this.polygon.points[i].x, this.polygon.points[i].y);
-            }
-            this.debugGraphic.endFill();
-        }
+        this.debugPolygon = new PIXI.Graphics();
+        // this.debugPolygon.lineStyle(0.5,color);
+        this.debugPolygon.beginFill(color);
+        this.debugPolygon.drawCircle(0,0,this.range);
+        // this.debugPolygon.alpha = 0;
+        this.hitContainer.addChild(this.debugPolygon);
+    },
+    getContent:function(){
+        return this.entityContainer;
     },
     build: function(){
-        this._super('dist/img/fireball.png');
+        // this._super();
+        this.centerPosition = {x:0, y:0};
         this.updateable = true;
         this.collidable = true;
         // var self = this;
-        this.debugGraphic = new PIXI.Graphics();
-        this.debugGraphic.beginFill(0x113300);
-        this.debugGraphic.lineStyle(1, 0xffd900, 1);
-        this.debugGraphic.endFill();
+        this.debugPolygon(0xFF0000);
     },
     update: function(){
         this._super();
@@ -690,24 +728,6 @@ var Fire = Entity.extend({
         if(this.timeLive <= 0){
             this.preKill();
         }
-
-        // if(this.debugGraphic.parent === null && this.getContent().parent !== null)
-        // {
-        //     this.getContent().parent.addChild(this.debugGraphic);
-        // }
-
-        if(this.getContent()){
-            this.width = this.getContent().width;
-            this.height = this.getContent().height;
-        }
-        this.getBounds();
-        this.range = this.width / 2;
-        // this.debugGraphic.clear();
-        // this.debugGraphic.beginFill(0xFF3300);
-        // this.debugGraphic.lineStyle(1, 0xffd900, 1);
-        // this.debugGraphic.drawRect(this.bounds.x, this.bounds.y,this.bounds.w, this.bounds.h);
-        //this.debugGraphic.endFill();
-        // this.debugPolygon(0x556644, true);
     },
     collide:function(arrayCollide){
         // console.log('fireCollide', arrayCollide[0].type);
@@ -727,27 +747,7 @@ var Fire = Entity.extend({
             this.updateable = false;
             this.collidable = false;
             TweenLite.to(this.getContent().scale, 0.3, {x:0.2, y:0.2, onComplete:function(){self.kill = true;}});
-
-            if(this.debugGraphic.parent){
-                this.debugGraphic.parent.removeChild(this.debugGraphic);
-            }
         }
-    },
-    pointDistance: function(x, y, x0, y0){
-        return Math.sqrt((x -= x0) * x + (y -= y0) * y);
-    },
-    touch: function(collection){
-
-        // console.log(collection);
-        // if(collection.object.getPosition().y > this.getPosition().y)
-        // {
-        //     this.velocity.y *= -1;
-        // }
-        // if(collection.up|| collection.down && this.virtualVelocity.y !== 0)
-        // {
-        //     this.velocity.y *= -1;
-        // }
-        this.preKill();
     },
 });
 
@@ -1563,10 +1563,12 @@ var GameScreen = AbstractScreen.extend({
         this.layerManager = new LayerManager();
         this.environmentLayer = new Layer("Environment");
         this.entityLayer = new Layer("Entity");
+        this.fireLayer = new Layer("Fire");
         this.enemyLayer = new Layer("Enemy");
         this.layerManager.addLayer(this.environmentLayer);
         this.layerManager.addLayer(this.enemyLayer);
         this.layerManager.addLayer(this.entityLayer);
+        this.layerManager.addLayer(this.fireLayer);
 
         this.verticalSpeed = windowHeight * 0.005;
 
@@ -1577,11 +1579,11 @@ var GameScreen = AbstractScreen.extend({
         }
         this.environment = new Environment(configEnvironment);
         this.environmentLayer.addChild(this.environment);
-        this.environment.velocity.y = -this.verticalSpeed;
+        this.environment.velocity.y = this.verticalSpeed;
 
         var self = this;
 
-        this.player1 = new Player(this,"PLAYER1");
+        this.player1 = new Player(this,"PLAYER1",this.fireLayer);
         this.player1.build();
         this.entityLayer.addChild(this.player1);
         this.player1.getContent().position.x = windowWidth/2;
@@ -1589,8 +1591,8 @@ var GameScreen = AbstractScreen.extend({
 
 
 
-        this.player2 = new Player(this,"PLAYER2");
-        this.player2.build();
+        this.player2 = new Player(this,"PLAYER2",this.fireLayer);
+        this.player2.build();     
         this.entityLayer.addChild(this.player2);
         this.player2.getContent().position.x = windowWidth/1.5;
         this.player2.getContent().position.y = windowHeight/1.5;
@@ -1609,35 +1611,48 @@ var GameScreen = AbstractScreen.extend({
         this.gameHit.alpha = 0.1;
         this.gameHit.hitArea = new PIXI.Rectangle(0, 0, windowWidth, windowHeight);
 
-        
-        {
-        //detectar colisoes aqui pra mover depois
-            this.gameHit.mousemove = this.gameHit.touchmove = function(touchData){
-                if(!self.updateable){
-                    return;
-                }
-                self.currentPosition = touchData.global;
-                if(self.touchDown){
-                    self.detectTouchCollision(touchData);
-                }
-            };
-            this.gameHit.mousedown = this.gameHit.touchstart = function(touchData){
-                if(!self.updateable){
-                    return;
-                }
-                self.onReset = false;
-                self.currentPosition = touchData.global;
-                self.touchDown = true;
-                self.detectTouchCollision(touchData);
-            };
-            this.gameHit.mouseup = this.gameHit.touchend = function(touchData){
-                self.label.setText("");
-                self.touchDown = false;
-                self.currentPosition = null;
-                self.selectedPlayer = null;
-                self.onReset = false;
-            };
-        }
+
+        // use the mousedown and touchstart
+
+        // {
+        // //detectar colisoes aqui pra mover depois
+        //     this.gameHit.mousemove = this.gameHit.touchmove = function(touchData){
+        //         if(!self.updateable){
+        //             return;
+        //         }
+        //         self.currentPosition = touchData.global;
+        //         if(self.touchDown){
+        //             self.detectTouchCollision(touchData);
+        //         }
+        //     };
+        //     this.gameHit.mousedown = this.gameHit.touchstart = function(touchData){
+        //         if(!self.updateable){
+        //             return;
+        //         }
+        //         self.onReset = false;
+        //         self.currentPosition = touchData.global;
+        //         self.touchDown = true;
+        //         self.detectTouchCollision(touchData);
+
+        //         // var touch = {
+        //         //     id: event.data.identifier,
+        //         //     pos: event.data.getLocalPosition(this.view)
+        //         // };
+
+        //         self.label.setText(touchData);
+        //         console.log(touchData);
+        //         self.touches.push(touchData);
+        //     };
+        //     this.gameHit.mouseup = this.gameHit.touchend = function(touchData){
+        //         self.label.setText("");
+        //         self.touchDown = false;
+        //         self.currentPosition = null;
+        //         self.selectedPlayer = null;
+        //         self.onReset = false;
+        //     };
+        // }
+
+        this.selecteds = [];
 
         this.updateable = true;
 
@@ -1648,6 +1663,10 @@ var GameScreen = AbstractScreen.extend({
 
         this.label = new PIXI.Text("", {font:"20px Arial", fill:"red"});
         this.addChild(this.label);
+
+        this.label2 = new PIXI.Text("", {font:"20px Arial", fill:"red"});
+        this.addChild(this.label2);
+        this.label2.position.y = 200;
 
 
 
@@ -1662,6 +1681,7 @@ var GameScreen = AbstractScreen.extend({
         this.player1.reset();
         this.player2.reset();
 
+
         this.enemyCounter = this.verticalSpeed;
         this.maxEnemyCounter = this.verticalSpeed * this.player1.standardRange// * this.player1.scales.max;
         // console.log(this.verticalSpeed , this.player1.standardScale , this.player1.scales.max , 1.5);
@@ -1671,10 +1691,10 @@ var GameScreen = AbstractScreen.extend({
         this.updateable = true;
 
         this.player1.getContent().position.x = windowWidth / 2 - this.player1.range * 2;
-        this.player1.getContent().position.y = this.player1.range * 4;
+        this.player1.getContent().position.y = windowHeight - this.player1.range * 4;
         
         this.player2.getContent().position.x = windowWidth / 2 + this.player1.range * 2;
-        this.player2.getContent().position.y = this.player2.range * 4;
+        this.player2.getContent().position.y = windowHeight - this.player2.range * 4;
     },
     gameOver:function()
     {
@@ -1710,9 +1730,9 @@ var GameScreen = AbstractScreen.extend({
     },
     updateScales:function()
     {
-        if(this.selectedPlayer.subType == this.player2.subType){
+        if(this.selecteds[0].subType == this.player2.subType){
             this.player1.updateScale(this.player2);
-        }else if(this.selectedPlayer.subType == this.player1.subType){
+        }else if(this.selecteds[0].subType == this.player1.subType){
             this.player2.updateScale(this.player1);
         }
     },
@@ -1732,41 +1752,84 @@ var GameScreen = AbstractScreen.extend({
             this.enemyCounter --;
         }
     },
+    addSelected:function(entity){
+        var has = false;
+        for (var i = this.selecteds.length - 1; i >= 0; i--) {
+            if(this.selecteds[i] == entity){
+                has = true;
+            }
+        };
+        if(!has){
+            this.selecteds.push(entity);
+        }
+    },
+    removeSelected:function(entity){
+        for (var i = 0; i < this.selecteds.length; i++) {
+            if(this.selecteds[i] == entity){
+                this.selecteds.splice(i, 1);
+            }
+        };
+    },
     update:function()
     {
         if(!this.updateable){
             return;
         }
         if(this.layerManager){
-            this.updateEnemySpawner();
-            
-
-            if(this.selectedPlayer && this.touchDown && this.currentPosition.x + this.currentPosition.y > 0){
-                this.label.setText(this.selectedPlayer.subType);
-                targetPosition = {x:this.currentPosition.x - this.currentLocalPosition.x, y:this.currentPosition.y - this.currentLocalPosition.y}
-                // console.log(targetPosition);
-                if(targetPosition.x - this.selectedPlayer.range < (this.environment.model.leftWallScale * windowWidth)){
-                    targetPosition.x = this.environment.model.leftWallScale * windowWidth + this.selectedPlayer.range;
-                }else if(targetPosition.x + this.selectedPlayer.range > ((1 - this.environment.model.rightWallScale) * windowWidth)){
-                    targetPosition.x = ((1 - this.environment.model.rightWallScale) * windowWidth) - this.selectedPlayer.range
-                }
-
-                this.selectedPlayer.goTo(targetPosition);
-                this.updateScales();
-
+            // this.updateEnemySpawner();
+            if(this.player1.mouseDown){
+                this.addSelected(this.player1);
             }else{
-                this.label.setText("");
+                this.removeSelected(this.player1);
             }
+            if(this.player2.mouseDown){
+                this.addSelected(this.player2);
+            }else{
+                this.removeSelected(this.player2);
+            }
+            if(this.selecteds.length == 1){
+                this.updateScales();
+                if(this.selecteds[0].subType === this.player1.subType){
+                    this.player2.shoot();
+                }else{
+                    this.player1.shoot();                    
+                }
+            }else if(this.selecteds.length == 2){
+                for (var i = this.selecteds.length - 1; i >= 0; i--) {
+                    this.selecteds[i].toAverrageScale();
+                };
+            }
+            this.updateCollisions();
+
             this.layerManager.update();
 
-            this.entityLayer.collideChilds(this.player1);
-            // this.entityLayer.collideChilds(this.player2);
-
-
-            this.enemyLayer.collideChilds(this.player2);
-            this.enemyLayer.collideChilds(this.player1);
+            
         }
+
     },
+    updateCollisions:function()
+    {
+        var hasCollision;
+        for (var i = this.selecteds.length - 1; i >= 0; i--) {            
+            tempPlayer = this.selecteds[i];
+            hasCollision = false;
+            targetPosition = {x:tempPlayer.getPosition().x, y:tempPlayer.getPosition().y}
+            // console.log(targetPosition);
+            if(targetPosition.x - tempPlayer.range < (this.environment.model.leftWallScale * windowWidth)){
+                hasCollision = true;
+                targetPosition.x = this.environment.model.leftWallScale * windowWidth + tempPlayer.range;
+            }else if(targetPosition.x + tempPlayer.range > ((1 - this.environment.model.rightWallScale) * windowWidth)){
+                hasCollision = true;
+                targetPosition.x = ((1 - this.environment.model.rightWallScale) * windowWidth) - tempPlayer.range
+            }
+            if(hasCollision){
+                tempPlayer.goTo(targetPosition, true);
+            }
+        }
+        this.entityLayer.collideChilds(this.player1);
+        this.enemyLayer.collideChilds(this.player2);
+        this.enemyLayer.collideChilds(this.player1);
+    }
 });
 
 /*jshint undef:false */
