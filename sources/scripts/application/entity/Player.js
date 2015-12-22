@@ -27,7 +27,7 @@ var Player = Entity.extend({
 
 		this.standardScale = null;
 
-		this.hitPolygon(Math.random() * 0xFFFFFF,true);
+		this.hitPolygon(Math.random() * 0xFFFFFF,false);
 		this.debugPolygon(Math.random() * 0xFFFFFF,true);
 
 		this.playerImage = new SimpleSprite("img/assets/teste1.png", {x:0.5, y:0.8});
@@ -35,9 +35,6 @@ var Player = Entity.extend({
 
         this.getContent().interactive = true;
         this.hitContainer.interactive = true;
-        // console.log(this.getContent().hitArea)
-        // this.getContent().hitArea = new PIXI.Rectangle(-this.range*2,-this.range*2,this.range*2, this.range*2);
-        // this.playerImage.getContent().width = this.range;
 
 
         this.mouseDown = false;
@@ -45,34 +42,22 @@ var Player = Entity.extend({
         this.hitContainer.mousedown = this.hitContainer.touchstart = function(data)
         {
     //      data.originalEvent.preventDefault()
-            // store a refference to the data
-            // The reason for this is because of multitouch
-            // we want to track the movement of this particular touch
             this.data = data;
-            // this.alpha = 0.9;
             this.dragging = true;
             self.mouseDown = true;
         };
         
-        // set the events for when the mouse is released or a touch is released
-        
         this.hitContainer.mouseup = this.hitContainer.mouseupoutside = this.hitContainer.touchend = this.hitContainer.touchendoutside = function(data)
         {
-            // this.alpha = 1
             this.dragging = false;
-            // set the interaction data to null
             this.data = null;
             self.mouseDown = false;
         };
-        
-        // set the callbacks for when the mouse or a touch moves
-        
         this.hitContainer.mousemove = this.hitContainer.touchmove = function(data)
         {
             if(this.dragging && self.mouseDown)
             {
                 var newPosition = this.data.getLocalPosition(self.getContent().parent);
-                // console.log(newPosition, self.getPosition());
                 newPosition.x -=  self.getPosition().x - newPosition.x;
                 newPosition.y -=  self.getPosition().y - newPosition.y;
                 self.goTo(newPosition);
@@ -93,8 +78,8 @@ var Player = Entity.extend({
         debugPolygon = new PIXI.Graphics();
         // debugPolygon.lineStyle(0.5,color);
         debugPolygon.beginFill(color);
-        debugPolygon.drawCircle(0,0,this.range * 1.3);
-        debugPolygon.alpha = 0.5;
+        debugPolygon.drawCircle(0,0,this.range * 1.5);
+        debugPolygon.alpha = force?0:0.5;
         this.hitContainer.addChild(debugPolygon);
     },
 	build:function(){

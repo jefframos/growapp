@@ -1,17 +1,22 @@
 /*jshint undef:false */
 var DefaultBehaviour = Class.extend({
-    init: function (entity, player){
-		this.player = player;
+    init: function (entity, config){
+		// this.player = player;
 		this.entity = entity;
-		this.life = 8;
-		this.entity.setVelocity(-2,(Math.random()-0.5)*3);
-		this.sideAcum = 0;
-		this.sideMaxAcum = 200;
-		this.fireFreq = 25;
-		this.fireAcum = 0;
-		this.fireSpeed = 6;
+		this.config = config;
+		this.entity.velocity.x = 2;
 	},
 	update: function(){
+
+
+		if(this.entity.velocity.x > 0 && this.entity.getPosition().x > this.config.maxPosition||
+			this.entity.velocity.x < 0 && this.entity.getPosition().x < this.config.minPosition){
+			this.entity.velocity.x *= -1;
+		}
+		// else if(this.entity.velocity.x < 0 && this.entity.getPosition().x < this.config.minPosition){
+		// 	this.entity.velocity.x = 1;
+		// }
+
 		//this.entity.update();
 		// this.sideAcum --;
 		// if(this.sideAcum <= 0)

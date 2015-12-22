@@ -21,12 +21,18 @@ var Enemy = Entity.extend({
         this.playerContainer = new PIXI.DisplayObjectContainer();
         this.entityContainer.addChild(this.playerContainer);
 
-        this.playerImage = new SimpleSprite("img/assets/Blob_red.png", {x:0.5, y:0.5});
+        if(this.label == "ENEMY2"){
+            this.playerImage = new SimpleSprite("img/assets/Blob_red.png", {x:0.5, y:0.5});
+        }else{
+            this.playerImage = new SimpleSprite("img/assets/ennemy_Blob_blue.png", {x:0.5, y:0.5});
+        }
         this.playerContainer.addChild(this.playerImage.getContent());
         // this.playerImage.getContent().width = this.range;
         scaleConverter(this.playerContainer.width, this.standardRange * 2, 1, this.playerContainer);
         //scaleConverter(this.playerContainer.width, this.range * 2, 1, this.playerContainer);
         this.standardScale = this.playerContainer.scale;
+
+        this.behaviour = null;
 	},
 	debugPolygon: function(color, force){
         this.debugPolygon = new PIXI.Graphics();
@@ -56,6 +62,9 @@ var Enemy = Entity.extend({
         this.getContent().position.x += this.velocity.x;
         this.getContent().position.y += this.velocity.y;
 
+        if(this.behaviour){
+            this.behaviour.update();
+        }
         // console.log(windowHeight);
         if(this.velocity.y > 0 && this.getContent().position.y > windowHeight){
             this.preKill();

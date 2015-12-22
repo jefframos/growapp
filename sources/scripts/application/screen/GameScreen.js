@@ -11,7 +11,7 @@ var GameScreen = AbstractScreen.extend({
         APP.gameVariables = {
             verticalSpeed: windowHeight * 0.002,
             // enemyCounter: (windowHeight * 0.007) * windowHeight / APP.mapData.rows,
-            enemyCounter: (windowHeight * 0.005) * windowHeight / APP.mapData.rows,
+            enemyCounter: (windowHeight * 0.005) *this.getTileSize().height,
             growFactor: windowWidth * 0.0001,
             shootSpeedStandard: windowHeight * 0.008,
         }
@@ -189,7 +189,7 @@ var GameScreen = AbstractScreen.extend({
         this.player2.reset();
 
 
-        this.enemyCounter = this.verticalSpeed;
+        this.enemyCounter = APP.gameVariables.enemyCounter;
         this.maxEnemyCounter = APP.gameVariables.enemyCounter;
         this.onReset = true;
         this.updateable = true;
@@ -201,7 +201,8 @@ var GameScreen = AbstractScreen.extend({
     gameOver:function()
     {
         for (var i = this.enemyLayer.childs.length - 1; i >= 0; i--) {
-            this.enemyLayer.removeChild(this.enemyLayer.childs[i]);
+            this.enemyLayer.childs[i].preKill();
+            // this.enemyLayer.removeChild(this.enemyLayer.childs[i]);
         };
         this.updateable = false;
         this.reset();
@@ -243,11 +244,12 @@ var GameScreen = AbstractScreen.extend({
                 tempEnemy.getContent().position = this.getTilePosition(this.getRandom(2, APP.mapData.cols - 1), -1);
                 this.enemyLayer.addChild(tempEnemy);
             }else{
-                tempEnemy = new Enemy("ENEMY", {width:this.getTileSize().width});
+                tempEnemy = new Enemy("ENEMY2", {width:this.getTileSize().width});
                 tempEnemy.build();
                 tempEnemy.velocity.y = this.verticalSpeed;
                 tempEnemy.getContent().position = this.getTilePosition(this.getRandom(1, APP.mapData.cols - 1), -1, true);
                 this.enemyLayer.addChild(tempEnemy);
+                tempEnemy.behaviour = new DefaultBehaviour(tempEnemy, {minPosition:this.getTilePosition(2, -1,true).x, maxPosition:this.getTilePosition(APP.mapData.cols - 3, -1, true).x})
             }
             // tempEnemy.getContent().position = this.getTilePosition(this.getRandom(1, APP.mapData.cols - 1), -1, true);            this.enemyLayer.addChild(tempEnemy);
         }else{
