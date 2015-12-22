@@ -12,7 +12,7 @@ var GameScreen = AbstractScreen.extend({
             verticalSpeed: windowHeight * 0.002,
             // enemyCounter: (windowHeight * 0.007) * windowHeight / APP.mapData.rows,
             // enemyCounter: (windowHeight * 0.005) *this.getTileSize().height,
-            enemyRespaw: 6,
+            enemyRespaw: 5,
             growFactor: windowWidth * 0.0001,
             shootSpeedStandard: windowHeight * 0.008,
         }
