@@ -2,6 +2,22 @@
 var GameScreen = AbstractScreen.extend({
     init: function (label) {
         this._super(label);
+
+        APP.mapData = {
+            cols: 11,
+            rows: 15
+        }
+
+        APP.gameVariables = {
+            verticalSpeed: windowHeight * 0.002,
+            // enemyCounter: (windowHeight * 0.007) * windowHeight / APP.mapData.rows,
+            enemyCounter: (windowHeight * 0.005) * windowHeight / APP.mapData.rows,
+            growFactor: windowWidth * 0.0001,
+            shootSpeedStandard: windowHeight * 0.008,
+        }
+
+        console.log(APP.gameVariables.enemyCounter);
+
     },
     destroy: function () {
         this._super();
@@ -24,6 +40,55 @@ var GameScreen = AbstractScreen.extend({
         }else{
             this.onAssetsLoaded();
         }
+
+    },
+    getRandom:function(min, max){
+        ret = Math.floor(Math.random()*(max - min) + min);
+        console.log(ret,min, max);
+        return ret;
+    },
+    getTileSize:function(){
+         return {width:(windowWidth / APP.mapData.cols),
+            height:(windowHeight / APP.mapData.rows)}
+    },
+    getTilePosition:function(i,j, center){
+        if(i > APP.mapData.cols){
+            i = APP.mapData.cols;
+        }
+        if(j > APP.mapData.rows){
+            j = APP.mapData.rows;
+        }
+        returnObj = {
+            x:i * (windowWidth / APP.mapData.cols),
+            y:j * (windowHeight / APP.mapData.rows),
+        }
+        if(center){
+            returnObj.x += (windowWidth / APP.mapData.cols)/2;
+            returnObj.y += (windowHeight / APP.mapData.rows)/2;
+        }
+
+        return returnObj;
+    },
+    drawMapData:function(){
+        for (var i = APP.mapData.cols - 1; i >= 0; i--) {
+            tempLine = new PIXI.Graphics();
+            tempLine.lineStyle(0.5,0);
+            tempLine.moveTo(0,0);
+            tempLine.lineTo(0, windowHeight);
+            tempLine.position.x = i * windowWidth / APP.mapData.cols;
+            tempLine.alpha = 0.5;
+            this.addChild(tempLine);
+        };
+
+        for (var i = APP.mapData.rows - 1; i >= 0; i--) {
+            tempLine = new PIXI.Graphics();
+            tempLine.lineStyle(0.5,0);
+            tempLine.moveTo(0,0);
+            tempLine.lineTo(windowWidth , 0);
+            tempLine.position.y = i * windowHeight / APP.mapData.rows;
+            tempLine.alpha = 0.5;
+            this.addChild(tempLine);
+        };
     },
     showModal:function(){
     },
@@ -46,20 +111,23 @@ var GameScreen = AbstractScreen.extend({
         this.layerManager.addLayer(this.entityLayer);
         this.layerManager.addLayer(this.fireLayer);
 
-        this.verticalSpeed = windowHeight * 0.005;
+        this.verticalSpeed = APP.gameVariables.verticalSpeed;
 
         configEnvironment = {
+            leftWallScale:windowWidth / APP.mapData.cols / windowWidth,
+            rightWallScale:windowWidth / APP.mapData.cols / windowWidth,
             floorScale:0.8,
-            leftWallScale:0.1,
-            rightWallScale:0.1,
         }
+        console.log(configEnvironment);
+        configEnvironment.floorScale = 1 - configEnvironment.leftWallScale - configEnvironment.rightWallScale;
+
         this.environment = new Environment(configEnvironment);
         this.environmentLayer.addChild(this.environment);
         this.environment.velocity.y = this.verticalSpeed;
 
         var self = this;
 
-        this.player1 = new Player(this,"PLAYER1",this.fireLayer);
+        this.player1 = new Player(this.getTileSize().width/2,this,"PLAYER1",this.fireLayer);
         this.player1.build();
         this.entityLayer.addChild(this.player1);
         this.player1.getContent().position.x = windowWidth/2;
@@ -67,7 +135,7 @@ var GameScreen = AbstractScreen.extend({
 
 
 
-        this.player2 = new Player(this,"PLAYER2",this.fireLayer);
+        this.player2 = new Player(this.getTileSize().width/2,this,"PLAYER2",this.fireLayer);
         this.player2.build();     
         this.entityLayer.addChild(this.player2);
         this.player2.getContent().position.x = windowWidth/1.5;
@@ -88,46 +156,6 @@ var GameScreen = AbstractScreen.extend({
         this.gameHit.hitArea = new PIXI.Rectangle(0, 0, windowWidth, windowHeight);
 
 
-        // use the mousedown and touchstart
-
-        // {
-        // //detectar colisoes aqui pra mover depois
-        //     this.gameHit.mousemove = this.gameHit.touchmove = function(touchData){
-        //         if(!self.updateable){
-        //             return;
-        //         }
-        //         self.currentPosition = touchData.global;
-        //         if(self.touchDown){
-        //             self.detectTouchCollision(touchData);
-        //         }
-        //     };
-        //     this.gameHit.mousedown = this.gameHit.touchstart = function(touchData){
-        //         if(!self.updateable){
-        //             return;
-        //         }
-        //         self.onReset = false;
-        //         self.currentPosition = touchData.global;
-        //         self.touchDown = true;
-        //         self.detectTouchCollision(touchData);
-
-        //         // var touch = {
-        //         //     id: event.data.identifier,
-        //         //     pos: event.data.getLocalPosition(this.view)
-        //         // };
-
-        //         self.label.setText(touchData);
-        //         console.log(touchData);
-        //         self.touches.push(touchData);
-        //     };
-        //     this.gameHit.mouseup = this.gameHit.touchend = function(touchData){
-        //         self.label.setText("");
-        //         self.touchDown = false;
-        //         self.currentPosition = null;
-        //         self.selectedPlayer = null;
-        //         self.onReset = false;
-        //     };
-        // }
-
         this.selecteds = [];
 
         this.updateable = true;
@@ -147,6 +175,9 @@ var GameScreen = AbstractScreen.extend({
 
 
         this.reset();
+
+        this.drawMapData();
+
         
     },
     reset:function(){
@@ -159,32 +190,21 @@ var GameScreen = AbstractScreen.extend({
 
 
         this.enemyCounter = this.verticalSpeed;
-        this.maxEnemyCounter = this.verticalSpeed * this.player1.standardRange// * this.player1.scales.max;
-        // console.log(this.verticalSpeed , this.player1.standardScale , this.player1.scales.max , 1.5);
-        // this.enemyCounter = windowHeight * 0.2;
-        // this.maxEnemyCounter = windowHeight * 0.2;
+        this.maxEnemyCounter = APP.gameVariables.enemyCounter;
         this.onReset = true;
         this.updateable = true;
 
-        this.player1.getContent().position.x = windowWidth / 2 - this.player1.range * 2;
-        this.player1.getContent().position.y = windowHeight - this.player1.range * 4;
+        this.player1.getContent().position = this.getTilePosition(3, 12, true);
+        this.player2.getContent().position = this.getTilePosition(7, 12, true);
         
-        this.player2.getContent().position.x = windowWidth / 2 + this.player1.range * 2;
-        this.player2.getContent().position.y = windowHeight - this.player2.range * 4;
     },
     gameOver:function()
     {
-        
         for (var i = this.enemyLayer.childs.length - 1; i >= 0; i--) {
             this.enemyLayer.removeChild(this.enemyLayer.childs[i]);
         };
-
-
         this.updateable = false;
-
         this.reset();
-
-        // console.log(this);
         this.label.setText("gameOver");
     },
     detectTouchCollision:function(touchData)
@@ -216,14 +236,20 @@ var GameScreen = AbstractScreen.extend({
     {
         if(this.enemyCounter < 0){
             this.enemyCounter = this.maxEnemyCounter;
-            tempEnemy = new Enemy();
-            tempEnemy.build();
-            tempEnemy.velocity.y = -this.verticalSpeed;
-            tempEnemy.getContent().position.x = tempEnemy.range + Math.random() * (windowWidth - tempEnemy.range * 2)
-            tempEnemy.getContent().position.y = tempEnemy.range + windowHeight;
-            scaleConverter(tempEnemy.getContent().width, windowWidth, 0.08, tempEnemy.getContent());
-            // tempEnemy.getContent().scale.x = tempEnemy.getContent().scale.y = 0.5
-            this.enemyLayer.addChild(tempEnemy);
+            if(Math.random() < 0.5){
+                tempEnemy = new Enemy("ENEMY", {width:this.getTileSize().width*2});
+                tempEnemy.build();
+                tempEnemy.velocity.y = this.verticalSpeed;
+                tempEnemy.getContent().position = this.getTilePosition(this.getRandom(2, APP.mapData.cols - 1), -1);
+                this.enemyLayer.addChild(tempEnemy);
+            }else{
+                tempEnemy = new Enemy("ENEMY", {width:this.getTileSize().width});
+                tempEnemy.build();
+                tempEnemy.velocity.y = this.verticalSpeed;
+                tempEnemy.getContent().position = this.getTilePosition(this.getRandom(1, APP.mapData.cols - 1), -1, true);
+                this.enemyLayer.addChild(tempEnemy);
+            }
+            // tempEnemy.getContent().position = this.getTilePosition(this.getRandom(1, APP.mapData.cols - 1), -1, true);            this.enemyLayer.addChild(tempEnemy);
         }else{
             this.enemyCounter --;
         }
@@ -252,7 +278,7 @@ var GameScreen = AbstractScreen.extend({
             return;
         }
         if(this.layerManager){
-            // this.updateEnemySpawner();
+            this.updateEnemySpawner();
             if(this.player1.mouseDown){
                 this.addSelected(this.player1);
             }else{
@@ -275,10 +301,10 @@ var GameScreen = AbstractScreen.extend({
                     this.selecteds[i].toAverrageScale();
                 };
             }
-            this.updateCollisions();
 
             this.layerManager.update();
 
+            this.updateCollisions();
             
         }
 
@@ -286,11 +312,10 @@ var GameScreen = AbstractScreen.extend({
     updateCollisions:function()
     {
         var hasCollision;
-        for (var i = this.selecteds.length - 1; i >= 0; i--) {            
-            tempPlayer = this.selecteds[i];
+        for (var i = this.players.length - 1; i >= 0; i--) {            
+            tempPlayer = this.players[i];
             hasCollision = false;
-            targetPosition = {x:tempPlayer.getPosition().x, y:tempPlayer.getPosition().y}
-            // console.log(targetPosition);
+            targetPosition = {x:tempPlayer.getPosition().x, y:tempPlayer.getPosition().y};
             if(targetPosition.x - tempPlayer.range < (this.environment.model.leftWallScale * windowWidth)){
                 hasCollision = true;
                 targetPosition.x = this.environment.model.leftWallScale * windowWidth + tempPlayer.range;

@@ -210,24 +210,24 @@ var Dilma = Entity.extend({
 });
 
 var Enemy = Entity.extend({
-	init:function(label){
+	init:function(label, size){
 		this._super( true );
         this.updateable = false;
         this.deading = false;
-        this.standardRange = this.range = 40;
+        this.standardRange = this.range = size.width/2;
         this.width = 0;
         this.height = 0;
         this.type = 'enemy';
         this.label = label;
         this.node = null;
         this.life = 5;
-
+        console.log(size);
         this.entityContainer = new PIXI.DisplayObjectContainer();
 
         this.debugContainer = new PIXI.DisplayObjectContainer();
         this.entityContainer.addChild(this.debugContainer);
 
-        // this.debugPolygon(0xFF0000,true)
+        this.debugPolygon(0xFF0000,true)
 
         this.playerContainer = new PIXI.DisplayObjectContainer();
         this.entityContainer.addChild(this.playerContainer);
@@ -235,8 +235,8 @@ var Enemy = Entity.extend({
         this.playerImage = new SimpleSprite("img/assets/Blob_red.png", {x:0.5, y:0.5});
         this.playerContainer.addChild(this.playerImage.getContent());
         // this.playerImage.getContent().width = this.range;
-        // scaleConverter(this.playerContainer.width, this.debugContainer.width, 1, this.playerContainer);
-        scaleConverter(this.playerContainer.width, this.range * 2, 1, this.playerContainer);
+        scaleConverter(this.playerContainer.width, this.standardRange * 2, 1, this.playerContainer);
+        //scaleConverter(this.playerContainer.width, this.range * 2, 1, this.playerContainer);
         this.standardScale = this.playerContainer.scale;
 	},
 	debugPolygon: function(color, force){
@@ -325,12 +325,13 @@ var Item = Entity.extend({
 });
 
 var Player = Entity.extend({
-	init:function(parent, label, fireLayer){
+	init:function(range, parent, label, fireLayer){
 		this._super( true );
         this.updateable = false;
         this.deading = false;
-        // this.range = 40;
-        this.range = this.standardRange = windowWidth * 0.05;
+		this.scales = {min:1, max:2};
+		this.averrageScale = this.scales.min + (this.scales.max - this.scales.min) / 2;
+        this.range = this.standardRange = Math.floor(range / this.averrageScale);
         this.width = 0;
         this.height = 0;
         this.type = 'player';
@@ -339,8 +340,10 @@ var Player = Entity.extend({
         this.life = 5;
         this.parentClass = parent;
         this.fireLayer = fireLayer;
-
         this.entityContainer = new PIXI.DisplayObjectContainer();
+
+        this.collisionDebug = new PIXI.DisplayObjectContainer();
+		this.entityContainer.addChild(this.collisionDebug);
 
         this.hitContainer = new PIXI.DisplayObjectContainer();
 		this.entityContainer.addChild(this.hitContainer);
@@ -350,14 +353,15 @@ var Player = Entity.extend({
 
 		this.standardScale = null;
 
-		this.debugPolygon(Math.random() * 0xFFFFFF,true)
+		this.hitPolygon(Math.random() * 0xFFFFFF,true);
+		this.debugPolygon(Math.random() * 0xFFFFFF,true);
 
 		this.playerImage = new SimpleSprite("img/assets/teste1.png", {x:0.5, y:0.8});
         this.playerContainer.addChild(this.playerImage.getContent());
 
         this.getContent().interactive = true;
         this.hitContainer.interactive = true;
-        console.log(this.getContent().hitArea)
+        // console.log(this.getContent().hitArea)
         // this.getContent().hitArea = new PIXI.Rectangle(-this.range*2,-this.range*2,this.range*2, this.range*2);
         // this.playerImage.getContent().width = this.range;
 
@@ -391,7 +395,7 @@ var Player = Entity.extend({
         
         this.hitContainer.mousemove = this.hitContainer.touchmove = function(data)
         {
-            if(this.dragging)
+            if(this.dragging && self.mouseDown)
             {
                 var newPosition = this.data.getLocalPosition(self.getContent().parent);
                 // console.log(newPosition, self.getPosition());
@@ -404,12 +408,20 @@ var Player = Entity.extend({
 
 	},
 	debugPolygon: function(color, force){
-        this.debugPolygon = new PIXI.Graphics();
-        // this.debugPolygon.lineStyle(0.5,color);
-        this.debugPolygon.beginFill(color);
-        this.debugPolygon.drawCircle(0,0,this.range * 1.3);
-        this.debugPolygon.alpha = 0;
-        this.hitContainer.addChild(this.debugPolygon);
+        debugPolygon = new PIXI.Graphics();
+        debugPolygon.lineStyle(1,0xFF0000);
+        // debugPolygon.beginFill(color);
+        debugPolygon.drawCircle(0,0,this.range);
+        // this.debugPolygon.alpha = 0.5;
+        this.collisionDebug.addChild(debugPolygon);
+    },
+	hitPolygon: function(color, force){
+        debugPolygon = new PIXI.Graphics();
+        // debugPolygon.lineStyle(0.5,color);
+        debugPolygon.beginFill(color);
+        debugPolygon.drawCircle(0,0,this.range * 1.3);
+        debugPolygon.alpha = 0.5;
+        this.hitContainer.addChild(debugPolygon);
     },
 	build:function(){
 		var self = this;
@@ -420,13 +432,9 @@ var Player = Entity.extend({
 
         this.onMouseDown = false;
 
-        this.scales = {min:1, max:1.8};
-
-        this.averrageScale = this.scales.min + (this.scales.max - this.scales.min) / 2;
-
         this.getContent().scale.x = this.getContent().scale.y = this.averrageScale;
 
-        this.growFactor = windowWidth * 0.0002;
+        this.growFactor = APP.gameVariables.growFactor;
 
         scaleConverter(this.playerContainer.width, this.range * 2, 1, this.playerContainer);
 
@@ -439,30 +447,32 @@ var Player = Entity.extend({
 	reset:function(){
 		this.shootAcum = 0;
 		this.shootMaxAcum = 50;
-		// TweenLite.killTweensOf(this.getContent());
-		// TweenLite.killTweensOf(this.playerContainer);
-		// TweenLite.killTweensOf(this.playerContainer.scale);
 		this.getContent().scale.x = this.getContent().scale.y = this.averrageScale;
-		// // console.log(this.playerContainer.children.length);
-		// //scaleConverter(this.playerContainer.width, this.hitContainer.width, 1, this.playerContainer);
-		// console.log("lll",this.standardScale);
-		// // this.playerContainer.scale = this.standardScale;
-		// var self = this;
-		// if(this.timeline){
-		// 	this.timeline.clear();
-		// 	this.timeline.kill();
-		// }
-		// this.timeline = new TimelineLite({onComplete:function(){
-		// 		self.timeline.restart();
-		// 	}
-		// });
-		// this.animationSpeedReference = 0.4;
-		// this.timeline.add(TweenLite.to(this.playerContainer.scale, this.animationSpeedReference * 0.3, {x:this.standardScale.x * 1.1,y:this.standardScale.y * 0.9}));
-		// // this.timeline.add(TweenLite.to(this.playerContainer.scale, 0.2, {x:this.standardScale.x * 1.2,y:this.standardScale.y * 0.8}));
-		// this.timeline.add(TweenLite.to(this.playerContainer.scale, this.animationSpeedReference * 0.5, {x:this.standardScale.x * 0.9,y:this.standardScale.y * 1.1}));
-		// this.timeline.add(TweenLite.to(this.playerContainer.scale, this.animationSpeedReference * 0.2, {x:this.standardScale.x, y:this.standardScale.y}));
+		this.mouseDown = false;
 
-		// this.timeline.resume();
+		this.updateable = true;
+        this.collidable = true;
+
+		TweenLite.killTweensOf(this.getContent());
+		TweenLite.killTweensOf(this.playerContainer);
+		TweenLite.killTweensOf(this.playerContainer.scale);
+
+		var self = this;
+		if(this.timeline){
+			this.timeline.clear();
+			this.timeline.kill();
+		}
+		this.timeline = new TimelineLite({onComplete:function(){
+				self.timeline.restart();
+			}
+		});
+		this.animationSpeedReference = 0.4;
+		this.timeline.add(TweenLite.to(this.playerContainer.scale, this.animationSpeedReference * 0.3, {x:this.standardScale.x * 1.1,y:this.standardScale.y * 0.9}));
+		this.timeline.add(TweenLite.to(this.playerContainer.scale, 0.2, {x:this.standardScale.x * 1.2,y:this.standardScale.y * 0.8}));
+		this.timeline.add(TweenLite.to(this.playerContainer.scale, this.animationSpeedReference * 0.5, {x:this.standardScale.x * 0.9,y:this.standardScale.y * 1.1}));
+		this.timeline.add(TweenLite.to(this.playerContainer.scale, this.animationSpeedReference * 0.2, {x:this.standardScale.x, y:this.standardScale.y}));
+
+		this.timeline.resume();
 
 	},
 	goTo:function(position, force){
@@ -470,7 +480,7 @@ var Player = Entity.extend({
 			this.getContent().position.x = position.x;
 			this.getContent().position.y = position.y;
 		}else{
-			TweenLite.to(this.getContent().position, 0.05,{x:position.x,y:position.y});
+			TweenLite.to(this.getContent().position, 0.4,{x:position.x,y:position.y});
 		}
 	},
 	getContent:function(){
@@ -478,6 +488,7 @@ var Player = Entity.extend({
 	},
 	toAverrageScale:function(){
 
+		this.shootAcum = this.shootMaxAcum;
 		TweenLite.to(this.getContent().scale, 0.1,{x:this.averrageScale,y:this.averrageScale});
 	},
 	updateScale:function(target){
@@ -488,15 +499,17 @@ var Player = Entity.extend({
 			target.getContent().scale.y += this.growFactor;
 
 			target.range = target.standardRange * target.getContent().scale.x;
+			this.range = this.standardRange * this.getContent().scale.x;
+			// console.log(target.range);
 		}
 		//target.getContent().scale.x = target.getContent().scale.y += this.growFactor;
 		this.getContent().scale.x = this.getContent().scale.y = this.scales.min + this.scales.max - target.getContent().scale.x;		
 	},
 	shoot:function(){
 		if(this.shootAcum <= 0){
-			console.log("this");
+			// console.log("this");
 			this.shootAcum = this.shootMaxAcum;
-			var fire = new Fire({x:0, y:-4});
+			var fire = new Fire({x:0, y:- APP.gameVariables.shootSpeedStandard});
 			fire.build();
 			fire.setPosition(this.getPosition().x, this.getPosition().y);
 			this.fireLayer.addChild(fire);
@@ -515,6 +528,7 @@ var Player = Entity.extend({
         // console.log(arrayCollide[0].type);
         if(this.parentClass){
         	this.parentClass.gameOver();
+        	// this.preKill();
         }
         if(this.collidable){
             if(arrayCollide[0].type === 'enemy'){
@@ -534,7 +548,10 @@ var Player = Entity.extend({
             var self = this;
             this.updateable = false;
             this.collidable = false;
-            TweenLite.to(this.getContent().scale, 0.3, {x:0.2, y:0.2, onComplete:function(){self.kill = true;}});
+            TweenLite.to(this.getContent().scale, 0.3, {x:0.2, y:0.2, onComplete:function(){
+            	// self.kill = true;
+            	self.parentClass.gameOver();
+            }});
 
         }
     },
@@ -684,7 +701,7 @@ var Door = Entity.extend({
 /*jshint undef:false */
 var Fire = Entity.extend({
     init:function(vel){
-        console.log(vel);
+        // console.log(vel);
         this._super( true );
         this.updateable = false;
         this.deading = false;
@@ -1526,6 +1543,22 @@ var RainParticle = Class.extend({
 var GameScreen = AbstractScreen.extend({
     init: function (label) {
         this._super(label);
+
+        APP.mapData = {
+            cols: 11,
+            rows: 15
+        }
+
+        APP.gameVariables = {
+            verticalSpeed: windowHeight * 0.002,
+            // enemyCounter: (windowHeight * 0.007) * windowHeight / APP.mapData.rows,
+            enemyCounter: (windowHeight * 0.005) * windowHeight / APP.mapData.rows,
+            growFactor: windowWidth * 0.0001,
+            shootSpeedStandard: windowHeight * 0.008,
+        }
+
+        console.log(APP.gameVariables.enemyCounter);
+
     },
     destroy: function () {
         this._super();
@@ -1548,6 +1581,55 @@ var GameScreen = AbstractScreen.extend({
         }else{
             this.onAssetsLoaded();
         }
+
+    },
+    getRandom:function(min, max){
+        ret = Math.floor(Math.random()*(max - min) + min);
+        console.log(ret,min, max);
+        return ret;
+    },
+    getTileSize:function(){
+         return {width:(windowWidth / APP.mapData.cols),
+            height:(windowHeight / APP.mapData.rows)}
+    },
+    getTilePosition:function(i,j, center){
+        if(i > APP.mapData.cols){
+            i = APP.mapData.cols;
+        }
+        if(j > APP.mapData.rows){
+            j = APP.mapData.rows;
+        }
+        returnObj = {
+            x:i * (windowWidth / APP.mapData.cols),
+            y:j * (windowHeight / APP.mapData.rows),
+        }
+        if(center){
+            returnObj.x += (windowWidth / APP.mapData.cols)/2;
+            returnObj.y += (windowHeight / APP.mapData.rows)/2;
+        }
+
+        return returnObj;
+    },
+    drawMapData:function(){
+        for (var i = APP.mapData.cols - 1; i >= 0; i--) {
+            tempLine = new PIXI.Graphics();
+            tempLine.lineStyle(0.5,0);
+            tempLine.moveTo(0,0);
+            tempLine.lineTo(0, windowHeight);
+            tempLine.position.x = i * windowWidth / APP.mapData.cols;
+            tempLine.alpha = 0.5;
+            this.addChild(tempLine);
+        };
+
+        for (var i = APP.mapData.rows - 1; i >= 0; i--) {
+            tempLine = new PIXI.Graphics();
+            tempLine.lineStyle(0.5,0);
+            tempLine.moveTo(0,0);
+            tempLine.lineTo(windowWidth , 0);
+            tempLine.position.y = i * windowHeight / APP.mapData.rows;
+            tempLine.alpha = 0.5;
+            this.addChild(tempLine);
+        };
     },
     showModal:function(){
     },
@@ -1570,20 +1652,23 @@ var GameScreen = AbstractScreen.extend({
         this.layerManager.addLayer(this.entityLayer);
         this.layerManager.addLayer(this.fireLayer);
 
-        this.verticalSpeed = windowHeight * 0.005;
+        this.verticalSpeed = APP.gameVariables.verticalSpeed;
 
         configEnvironment = {
+            leftWallScale:windowWidth / APP.mapData.cols / windowWidth,
+            rightWallScale:windowWidth / APP.mapData.cols / windowWidth,
             floorScale:0.8,
-            leftWallScale:0.1,
-            rightWallScale:0.1,
         }
+        console.log(configEnvironment);
+        configEnvironment.floorScale = 1 - configEnvironment.leftWallScale - configEnvironment.rightWallScale;
+
         this.environment = new Environment(configEnvironment);
         this.environmentLayer.addChild(this.environment);
         this.environment.velocity.y = this.verticalSpeed;
 
         var self = this;
 
-        this.player1 = new Player(this,"PLAYER1",this.fireLayer);
+        this.player1 = new Player(this.getTileSize().width/2,this,"PLAYER1",this.fireLayer);
         this.player1.build();
         this.entityLayer.addChild(this.player1);
         this.player1.getContent().position.x = windowWidth/2;
@@ -1591,7 +1676,7 @@ var GameScreen = AbstractScreen.extend({
 
 
 
-        this.player2 = new Player(this,"PLAYER2",this.fireLayer);
+        this.player2 = new Player(this.getTileSize().width/2,this,"PLAYER2",this.fireLayer);
         this.player2.build();     
         this.entityLayer.addChild(this.player2);
         this.player2.getContent().position.x = windowWidth/1.5;
@@ -1612,46 +1697,6 @@ var GameScreen = AbstractScreen.extend({
         this.gameHit.hitArea = new PIXI.Rectangle(0, 0, windowWidth, windowHeight);
 
 
-        // use the mousedown and touchstart
-
-        // {
-        // //detectar colisoes aqui pra mover depois
-        //     this.gameHit.mousemove = this.gameHit.touchmove = function(touchData){
-        //         if(!self.updateable){
-        //             return;
-        //         }
-        //         self.currentPosition = touchData.global;
-        //         if(self.touchDown){
-        //             self.detectTouchCollision(touchData);
-        //         }
-        //     };
-        //     this.gameHit.mousedown = this.gameHit.touchstart = function(touchData){
-        //         if(!self.updateable){
-        //             return;
-        //         }
-        //         self.onReset = false;
-        //         self.currentPosition = touchData.global;
-        //         self.touchDown = true;
-        //         self.detectTouchCollision(touchData);
-
-        //         // var touch = {
-        //         //     id: event.data.identifier,
-        //         //     pos: event.data.getLocalPosition(this.view)
-        //         // };
-
-        //         self.label.setText(touchData);
-        //         console.log(touchData);
-        //         self.touches.push(touchData);
-        //     };
-        //     this.gameHit.mouseup = this.gameHit.touchend = function(touchData){
-        //         self.label.setText("");
-        //         self.touchDown = false;
-        //         self.currentPosition = null;
-        //         self.selectedPlayer = null;
-        //         self.onReset = false;
-        //     };
-        // }
-
         this.selecteds = [];
 
         this.updateable = true;
@@ -1671,6 +1716,9 @@ var GameScreen = AbstractScreen.extend({
 
 
         this.reset();
+
+        this.drawMapData();
+
         
     },
     reset:function(){
@@ -1683,32 +1731,21 @@ var GameScreen = AbstractScreen.extend({
 
 
         this.enemyCounter = this.verticalSpeed;
-        this.maxEnemyCounter = this.verticalSpeed * this.player1.standardRange// * this.player1.scales.max;
-        // console.log(this.verticalSpeed , this.player1.standardScale , this.player1.scales.max , 1.5);
-        // this.enemyCounter = windowHeight * 0.2;
-        // this.maxEnemyCounter = windowHeight * 0.2;
+        this.maxEnemyCounter = APP.gameVariables.enemyCounter;
         this.onReset = true;
         this.updateable = true;
 
-        this.player1.getContent().position.x = windowWidth / 2 - this.player1.range * 2;
-        this.player1.getContent().position.y = windowHeight - this.player1.range * 4;
+        this.player1.getContent().position = this.getTilePosition(3, 12, true);
+        this.player2.getContent().position = this.getTilePosition(7, 12, true);
         
-        this.player2.getContent().position.x = windowWidth / 2 + this.player1.range * 2;
-        this.player2.getContent().position.y = windowHeight - this.player2.range * 4;
     },
     gameOver:function()
     {
-        
         for (var i = this.enemyLayer.childs.length - 1; i >= 0; i--) {
             this.enemyLayer.removeChild(this.enemyLayer.childs[i]);
         };
-
-
         this.updateable = false;
-
         this.reset();
-
-        // console.log(this);
         this.label.setText("gameOver");
     },
     detectTouchCollision:function(touchData)
@@ -1740,14 +1777,20 @@ var GameScreen = AbstractScreen.extend({
     {
         if(this.enemyCounter < 0){
             this.enemyCounter = this.maxEnemyCounter;
-            tempEnemy = new Enemy();
-            tempEnemy.build();
-            tempEnemy.velocity.y = -this.verticalSpeed;
-            tempEnemy.getContent().position.x = tempEnemy.range + Math.random() * (windowWidth - tempEnemy.range * 2)
-            tempEnemy.getContent().position.y = tempEnemy.range + windowHeight;
-            scaleConverter(tempEnemy.getContent().width, windowWidth, 0.08, tempEnemy.getContent());
-            // tempEnemy.getContent().scale.x = tempEnemy.getContent().scale.y = 0.5
-            this.enemyLayer.addChild(tempEnemy);
+            if(Math.random() < 0.5){
+                tempEnemy = new Enemy("ENEMY", {width:this.getTileSize().width*2});
+                tempEnemy.build();
+                tempEnemy.velocity.y = this.verticalSpeed;
+                tempEnemy.getContent().position = this.getTilePosition(this.getRandom(2, APP.mapData.cols - 1), -1);
+                this.enemyLayer.addChild(tempEnemy);
+            }else{
+                tempEnemy = new Enemy("ENEMY", {width:this.getTileSize().width});
+                tempEnemy.build();
+                tempEnemy.velocity.y = this.verticalSpeed;
+                tempEnemy.getContent().position = this.getTilePosition(this.getRandom(1, APP.mapData.cols - 1), -1, true);
+                this.enemyLayer.addChild(tempEnemy);
+            }
+            // tempEnemy.getContent().position = this.getTilePosition(this.getRandom(1, APP.mapData.cols - 1), -1, true);            this.enemyLayer.addChild(tempEnemy);
         }else{
             this.enemyCounter --;
         }
@@ -1776,7 +1819,7 @@ var GameScreen = AbstractScreen.extend({
             return;
         }
         if(this.layerManager){
-            // this.updateEnemySpawner();
+            this.updateEnemySpawner();
             if(this.player1.mouseDown){
                 this.addSelected(this.player1);
             }else{
@@ -1799,10 +1842,10 @@ var GameScreen = AbstractScreen.extend({
                     this.selecteds[i].toAverrageScale();
                 };
             }
-            this.updateCollisions();
 
             this.layerManager.update();
 
+            this.updateCollisions();
             
         }
 
@@ -1810,11 +1853,10 @@ var GameScreen = AbstractScreen.extend({
     updateCollisions:function()
     {
         var hasCollision;
-        for (var i = this.selecteds.length - 1; i >= 0; i--) {            
-            tempPlayer = this.selecteds[i];
+        for (var i = this.players.length - 1; i >= 0; i--) {            
+            tempPlayer = this.players[i];
             hasCollision = false;
-            targetPosition = {x:tempPlayer.getPosition().x, y:tempPlayer.getPosition().y}
-            // console.log(targetPosition);
+            targetPosition = {x:tempPlayer.getPosition().x, y:tempPlayer.getPosition().y};
             if(targetPosition.x - tempPlayer.range < (this.environment.model.leftWallScale * windowWidth)){
                 hasCollision = true;
                 targetPosition.x = this.environment.model.leftWallScale * windowWidth + tempPlayer.range;

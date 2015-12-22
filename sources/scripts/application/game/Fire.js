@@ -1,7 +1,7 @@
 /*jshint undef:false */
 var Fire = Entity.extend({
     init:function(vel){
-        console.log(vel);
+        // console.log(vel);
         this._super( true );
         this.updateable = false;
         this.deading = false;
