@@ -84,7 +84,7 @@ var Enemy = Entity.extend({
         //scaleConverter(this.playerContainer.width, this.range * 2, 1, this.playerContainer);
         this.standardScale = this.playerContainer.scale;
 
-        this.behaviour = null;
+        this.behaviours = [];
 	},
 	debugPolygon: function(color, force){
         this.debugPolygon = new PIXI.Graphics();
@@ -114,8 +114,13 @@ var Enemy = Entity.extend({
         this.getContent().position.x += this.velocity.x;
         this.getContent().position.y += this.velocity.y;
 
-        if(this.behaviour){
-            this.behaviour.update();
+        if(this.behaviours){
+            for (var i = this.behaviours.length - 1; i >= 0; i--) {
+                if(!this.behaviours[i].entity){
+                    this.behaviours[i].build(this);
+                }
+                this.behaviours[i].update();
+            };
         }
         // console.log(windowHeight);
         if(this.velocity.y > 0 && this.getContent().position.y > windowHeight){
@@ -1334,7 +1339,8 @@ var GameScreen = AbstractScreen.extend({
         APP.gameVariables = {
             verticalSpeed: windowHeight * 0.002,
             // enemyCounter: (windowHeight * 0.007) * windowHeight / APP.mapData.rows,
-            enemyCounter: (windowHeight * 0.005) *this.getTileSize().height,
+            // enemyCounter: (windowHeight * 0.005) *this.getTileSize().height,
+            enemyRespaw: 6,
             growFactor: windowWidth * 0.0001,
             shootSpeedStandard: windowHeight * 0.008,
         }
@@ -1501,6 +1507,8 @@ var GameScreen = AbstractScreen.extend({
 
         this.drawMapData();
 
+        this.laneCounter = 0;
+
         
     },
     reset:function(){
@@ -1511,6 +1519,9 @@ var GameScreen = AbstractScreen.extend({
         this.player1.reset();
         this.player2.reset();
 
+        this.lastTileCounter = -1;
+        this.tileCounter = 0;
+        this.laneCounter = 0;
 
         this.enemyCounter = APP.gameVariables.enemyCounter;
         this.maxEnemyCounter = APP.gameVariables.enemyCounter;
@@ -1556,24 +1567,53 @@ var GameScreen = AbstractScreen.extend({
             this.player2.updateScale(this.player1);
         }
     },
+    getRandomBehaviour:function(fixed){
+
+        behaviours = []
+        behaviours.push(new ScaleBehaviour({minScale:1, maxScale:2}));
+        behaviours.push(new DefaultBehaviour({minPosition:this.getTilePosition(2, -1,true).x, maxPosition:this.getTilePosition(APP.mapData.cols - 3, -1, true).x}));
+
+        if(fixed){
+            return behaviours[fixed];
+        }else{
+            return behaviours[Math.floor(Math.random() * behaviours.length)];
+        }
+    },
     updateEnemySpawner:function()
     {
-        if(this.enemyCounter < 0){
+        // if(this.enemyCounter < 0){
+        if(this.tileCounter % APP.gameVariables.enemyRespaw == 0 && this.lastTileCounter != this.tileCounter){
+            this.lastTileCounter = this.tileCounter;
             this.enemyCounter = this.maxEnemyCounter;
             if(Math.random() < 0.5){
                 tempEnemy = new Enemy("ENEMY", {width:this.getTileSize().width*2});
+                // tempEnemy = new Enemy("ENEMY", {width:this.getTileSize().width});
                 tempEnemy.build();
                 tempEnemy.velocity.y = this.verticalSpeed;
-                tempEnemy.getContent().position = this.getTilePosition(this.getRandom(2, APP.mapData.cols - 1), -1);
+                tempEnemy.getContent().position = this.getTilePosition(this.getRandom(3, APP.mapData.cols - 2), -1);
                 this.enemyLayer.addChild(tempEnemy);
+
+                rnd = Math.random();
+                if(rnd < 0.6){
+                    tempEnemy.behaviours.push(this.getRandomBehaviour(1));
+                }
+
             }else{
                 tempEnemy = new Enemy("ENEMY2", {width:this.getTileSize().width});
                 tempEnemy.build();
                 tempEnemy.velocity.y = this.verticalSpeed;
                 tempEnemy.getContent().position = this.getTilePosition(this.getRandom(1, APP.mapData.cols - 1), -1, true);
-                this.enemyLayer.addChild(tempEnemy);
-                tempEnemy.behaviour = new DefaultBehaviour(tempEnemy, {minPosition:this.getTilePosition(2, -1,true).x, maxPosition:this.getTilePosition(APP.mapData.cols - 3, -1, true).x})
+                this.enemyLayer.addChild(tempEnemy);  
+
+                rnd = Math.random();
+                if(rnd < 0.3){
+                    tempEnemy.behaviours.push(this.getRandomBehaviour(0));
+                    tempEnemy.behaviours.push(this.getRandomBehaviour(1));
+                }else if(rnd < 0.6){
+                    tempEnemy.behaviours.push(this.getRandomBehaviour());
+                }              
             }
+            
             // tempEnemy.getContent().position = this.getTilePosition(this.getRandom(1, APP.mapData.cols - 1), -1, true);            this.enemyLayer.addChild(tempEnemy);
         }else{
             this.enemyCounter --;
@@ -1630,7 +1670,10 @@ var GameScreen = AbstractScreen.extend({
             this.layerManager.update();
 
             this.updateCollisions();
-            
+
+            this.laneCounter += this.verticalSpeed;
+            this.tileCounter = Math.floor(this.laneCounter / this.getTileSize().height);
+            this.label2.setText(this.tileCounter);
         }
 
     },
@@ -2285,10 +2328,13 @@ var EnvironmentObject = Class.extend({
 
 /*jshint undef:false */
 var DefaultBehaviour = Class.extend({
-    init: function (entity, config){
-		// this.player = player;
-		this.entity = entity;
+    init: function (config){
+		this.entity = null;
 		this.config = config;
+		
+	},
+	build:function(entity){
+		this.entity = entity;
 		this.entity.velocity.x = 2;
 	},
 	update: function(){
@@ -2298,6 +2344,65 @@ var DefaultBehaviour = Class.extend({
 			this.entity.velocity.x < 0 && this.entity.getPosition().x < this.config.minPosition){
 			this.entity.velocity.x *= -1;
 		}
+		// else if(this.entity.velocity.x < 0 && this.entity.getPosition().x < this.config.minPosition){
+		// 	this.entity.velocity.x = 1;
+		// }
+
+		//this.entity.update();
+		// this.sideAcum --;
+		// if(this.sideAcum <= 0)
+		// {
+		// 	this.entity.setVelocity(-1,this.entity.velocity.y*-1);
+		// 	this.sideAcum = this.sideMaxAcum;
+		// }
+
+		// if(this.fireAcum >= this.fireFreq)
+		// {
+		// 	var pr = new Fire(true, new this.entity.fireBehaviour.clone());
+		// 	pr.build();
+		// 	this.fireAcum = 0;
+		// 	this.entity.layer.addChildFirst(pr);		
+		// 	pr.setPosition(this.entity.getPosition().x,this.entity.getPosition().y);
+		// 	pr.setVelocity(-this.fireSpeed,0);
+		// }
+		// else
+		// {
+		// 	this.fireAcum ++;
+		// }
+		// if(this.entity.getPosition().x < -20 || this.entity.getPosition().x > windowWidth + 50 || this.entity.getPosition().y < -30 || this.entity.getPosition().y > windowHeight)
+		// {
+		// 	this.entity.kill = true;
+		// }
+
+		// this.entity.sprite.position.x += this.entity.velocity.x;
+		// this.entity.sprite.position.y += this.entity.velocity.y;
+			
+		// if(this.entity.velocity.x > 0)
+		// 	this.entity.setScale(-1,1 );
+		// else if(this.entity.velocity.x < 0)
+		// 	this.entity.setScale(1,1 );
+    },
+});
+/*jshint undef:false */
+var ScaleBehaviour = Class.extend({
+    init: function (config){
+		// this.player = player;
+		this.entity = null;
+		this.config = config;
+
+	},
+	build:function(entity){
+		this.entity = entity;
+		this.entity.scaleVelocity = APP.gameVariables.growFactor / 4;
+	},
+	update: function(){
+
+
+		if(this.entity.scaleVelocity > 0 && this.entity.getContent().scale.x > this.config.maxScale||
+			this.entity.scaleVelocity < 0 && this.entity.getContent().scale.x < this.config.minScale){
+			this.entity.scaleVelocity *= -1;
+		}
+			this.entity.getContent().scale.x = this.entity.getContent().scale.y += this.entity.scaleVelocity; 
 		// else if(this.entity.velocity.x < 0 && this.entity.getPosition().x < this.config.minPosition){
 		// 	this.entity.velocity.x = 1;
 		// }

@@ -1,21 +1,23 @@
 /*jshint undef:false */
-var DefaultBehaviour = Class.extend({
+var ScaleBehaviour = Class.extend({
     init: function (config){
+		// this.player = player;
 		this.entity = null;
 		this.config = config;
-		
+
 	},
 	build:function(entity){
 		this.entity = entity;
-		this.entity.velocity.x = 2;
+		this.entity.scaleVelocity = APP.gameVariables.growFactor / 4;
 	},
 	update: function(){
 
 
-		if(this.entity.velocity.x > 0 && this.entity.getPosition().x > this.config.maxPosition||
-			this.entity.velocity.x < 0 && this.entity.getPosition().x < this.config.minPosition){
-			this.entity.velocity.x *= -1;
+		if(this.entity.scaleVelocity > 0 && this.entity.getContent().scale.x > this.config.maxScale||
+			this.entity.scaleVelocity < 0 && this.entity.getContent().scale.x < this.config.minScale){
+			this.entity.scaleVelocity *= -1;
 		}
+			this.entity.getContent().scale.x = this.entity.getContent().scale.y += this.entity.scaleVelocity; 
 		// else if(this.entity.velocity.x < 0 && this.entity.getPosition().x < this.config.minPosition){
 		// 	this.entity.velocity.x = 1;
 		// }

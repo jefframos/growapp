@@ -32,7 +32,7 @@ var Enemy = Entity.extend({
         //scaleConverter(this.playerContainer.width, this.range * 2, 1, this.playerContainer);
         this.standardScale = this.playerContainer.scale;
 
-        this.behaviour = null;
+        this.behaviours = [];
 	},
 	debugPolygon: function(color, force){
         this.debugPolygon = new PIXI.Graphics();
@@ -62,8 +62,13 @@ var Enemy = Entity.extend({
         this.getContent().position.x += this.velocity.x;
         this.getContent().position.y += this.velocity.y;
 
-        if(this.behaviour){
-            this.behaviour.update();
+        if(this.behaviours){
+            for (var i = this.behaviours.length - 1; i >= 0; i--) {
+                if(!this.behaviours[i].entity){
+                    this.behaviours[i].build(this);
+                }
+                this.behaviours[i].update();
+            };
         }
         // console.log(windowHeight);
         if(this.velocity.y > 0 && this.getContent().position.y > windowHeight){
