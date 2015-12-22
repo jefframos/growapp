@@ -62,7 +62,7 @@ var Enemy = Entity.extend({
         this.label = label;
         this.node = null;
         this.life = 5;
-        console.log(size);
+        // console.log(size);
         this.entityContainer = new PIXI.DisplayObjectContainer();
 
         this.debugContainer = new PIXI.DisplayObjectContainer();
@@ -1339,7 +1339,7 @@ var GameScreen = AbstractScreen.extend({
             shootSpeedStandard: windowHeight * 0.008,
         }
 
-        console.log(APP.gameVariables.enemyCounter);
+        // console.log(APP.gameVariables.enemyCounter);
 
     },
     destroy: function () {
@@ -1367,7 +1367,7 @@ var GameScreen = AbstractScreen.extend({
     },
     getRandom:function(min, max){
         ret = Math.floor(Math.random()*(max - min) + min);
-        console.log(ret,min, max);
+        // console.log(ret,min, max);
         return ret;
     },
     getTileSize:function(){
@@ -1441,7 +1441,7 @@ var GameScreen = AbstractScreen.extend({
             rightWallScale:windowWidth / APP.mapData.cols / windowWidth,
             floorScale:0.8,
         }
-        console.log(configEnvironment);
+        // console.log(configEnvironment);
         configEnvironment.floorScale = 1 - configEnvironment.leftWallScale - configEnvironment.rightWallScale;
 
         this.environment = new Environment(configEnvironment);

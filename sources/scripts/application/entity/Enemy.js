@@ -10,7 +10,7 @@ var Enemy = Entity.extend({
         this.label = label;
         this.node = null;
         this.life = 5;
-        console.log(size);
+        // console.log(size);
         this.entityContainer = new PIXI.DisplayObjectContainer();
 
         this.debugContainer = new PIXI.DisplayObjectContainer();
