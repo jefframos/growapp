@@ -3,15 +3,23 @@ var Application = AbstractApplication.extend({
 	init:function(){
         this._super(windowWidth, windowHeight);
         this.stage.setBackgroundColor(0x3dc554);
+
+
 	},
     build:function(){
         this._super();
         this.timerLabel = new PIXI.Text("00", {font:"50px barrocoregular", fill:"black"});
         this.stage.addChild(this.timerLabel);
+
+        this.gameController = new GameController();
+
         this.onAssetsLoaded();
     },
     getStage:function(){
         return this.stage;
+    },
+    getGameController:function(){
+        return this.gameController;
     },
     onAssetsLoaded:function()
     {
@@ -68,7 +76,7 @@ var Enemy = Entity.extend({
         this.debugContainer = new PIXI.DisplayObjectContainer();
         this.entityContainer.addChild(this.debugContainer);
 
-        this.debugPolygon(0xFF0000,true)
+        // this.debugPolygon(0xFF0000,true)
 
         this.playerContainer = new PIXI.DisplayObjectContainer();
         this.entityContainer.addChild(this.playerContainer);
@@ -190,9 +198,10 @@ var Player = Entity.extend({
         this.width = 0;
         this.height = 0;
         this.type = 'player';
-        this.subType = label;
+        this.label = label;
         this.node = null;
         this.life = 5;
+        this.startPosition = null;
         this.parentClass = parent;
         this.fireLayer = fireLayer;
         this.entityContainer = new PIXI.DisplayObjectContainer();
@@ -209,7 +218,7 @@ var Player = Entity.extend({
 		this.standardScale = null;
 
 		this.hitPolygon(Math.random() * 0xFFFFFF,false);
-		this.debugPolygon(Math.random() * 0xFFFFFF,true);
+		// this.debugPolygon(Math.random() * 0xFFFFFF,true);
 
 		this.playerImage = new SimpleSprite("img/assets/teste1.png", {x:0.5, y:0.8});
         this.playerContainer.addChild(this.playerImage.getContent());
@@ -247,6 +256,14 @@ var Player = Entity.extend({
         
 
 	},
+	boundsPolygon: function(color, force){
+        debugPolygon = new PIXI.Graphics();
+        debugPolygon.lineStyle(1,color);
+        // debugPolygon.beginFill(color);
+        debugPolygon.drawRect(this.bounds.x,this.bounds.y,this.bounds.width,this.bounds.height);
+        // this.debugPolygon.alpha = 0.5;
+        this.collisionDebug.addChild(debugPolygon);
+    },
 	debugPolygon: function(color, force){
         debugPolygon = new PIXI.Graphics();
         debugPolygon.lineStyle(1,0xFF0000);
@@ -282,6 +299,8 @@ var Player = Entity.extend({
     	this.standardScale.x = this.playerContainer.scale.x;
     	this.standardScale.y = this.playerContainer.scale.y;
 
+    	this.bounds = new PIXI.Rectangle(-this.range, -this.range, this.range*2, this.range*2);
+    	// this.boundsPolygon(0x00FF00);
     },
 
 	reset:function(){
@@ -293,26 +312,26 @@ var Player = Entity.extend({
 		this.updateable = true;
         this.collidable = true;
 
-		TweenLite.killTweensOf(this.getContent());
-		TweenLite.killTweensOf(this.playerContainer);
-		TweenLite.killTweensOf(this.playerContainer.scale);
+		// TweenLite.killTweensOf(this.getContent());
+		// TweenLite.killTweensOf(this.playerContainer);
+		// TweenLite.killTweensOf(this.playerContainer.scale);
 
-		var self = this;
-		if(this.timeline){
-			this.timeline.clear();
-			this.timeline.kill();
-		}
-		this.timeline = new TimelineLite({onComplete:function(){
-				self.timeline.restart();
-			}
-		});
-		this.animationSpeedReference = 0.4;
-		this.timeline.add(TweenLite.to(this.playerContainer.scale, this.animationSpeedReference * 0.3, {x:this.standardScale.x * 1.1,y:this.standardScale.y * 0.9}));
-		this.timeline.add(TweenLite.to(this.playerContainer.scale, 0.2, {x:this.standardScale.x * 1.2,y:this.standardScale.y * 0.8}));
-		this.timeline.add(TweenLite.to(this.playerContainer.scale, this.animationSpeedReference * 0.5, {x:this.standardScale.x * 0.9,y:this.standardScale.y * 1.1}));
-		this.timeline.add(TweenLite.to(this.playerContainer.scale, this.animationSpeedReference * 0.2, {x:this.standardScale.x, y:this.standardScale.y}));
+		// var self = this;
+		// if(this.timeline){
+		// 	this.timeline.clear();
+		// 	this.timeline.kill();
+		// }
+		// this.timeline = new TimelineLite({onComplete:function(){
+		// 		self.timeline.restart();
+		// 	}
+		// });
+		// this.animationSpeedReference = 0.4;
+		// this.timeline.add(TweenLite.to(this.playerContainer.scale, this.animationSpeedReference * 0.3, {x:this.standardScale.x * 1.1,y:this.standardScale.y * 0.9}));
+		// this.timeline.add(TweenLite.to(this.playerContainer.scale, 0.2, {x:this.standardScale.x * 1.2,y:this.standardScale.y * 0.8}));
+		// this.timeline.add(TweenLite.to(this.playerContainer.scale, this.animationSpeedReference * 0.5, {x:this.standardScale.x * 0.9,y:this.standardScale.y * 1.1}));
+		// this.timeline.add(TweenLite.to(this.playerContainer.scale, this.animationSpeedReference * 0.2, {x:this.standardScale.x, y:this.standardScale.y}));
 
-		this.timeline.resume();
+		// this.timeline.resume();
 
 	},
 	goTo:function(position, force){
@@ -331,19 +350,37 @@ var Player = Entity.extend({
 		this.shootAcum = this.shootMaxAcum;
 		TweenLite.to(this.getContent().scale, 0.1,{x:this.averrageScale,y:this.averrageScale});
 	},
-	updateScale:function(target){
+	updateScale:function(target, totalPlayers){
+		
 		
 		if(target.getContent().scale.x < target.scales.max){
 
-			target.getContent().scale.x += this.growFactor;
-			target.getContent().scale.y += this.growFactor;
+			newTargetScale = {x:0,y:0};
+			newTargetScale.x = target.getContent().scale.x + this.growFactor/totalPlayers;
+			newTargetScale.y = target.getContent().scale.y + this.growFactor/totalPlayers;
+
+			// TweenLite.to(target.getContent().scale, 0.1, {x:newTargetScale.x, y:newTargetScale.y});
+			target.getContent().scale = newTargetScale;
 
 			target.range = target.standardRange * target.getContent().scale.x;
 			this.range = this.standardRange * this.getContent().scale.x;
-			// console.log(target.range);
+
+
 		}
+
+
+		if(target.getContent().scale.x == this.getContent().scale.x)
+		{
+			return
+		}
+
+		newTargetScale = {x:this.scales.min + this.scales.max - target.getContent().scale.x,y:this.scales.min + this.scales.max - target.getContent().scale.x};
 		//target.getContent().scale.x = target.getContent().scale.y += this.growFactor;
-		this.getContent().scale.x = this.getContent().scale.y = this.scales.min + this.scales.max - target.getContent().scale.x;		
+		
+		this.getContent().scale = newTargetScale;
+		// TweenLite.to(this.getContent().scale, 0.1, {x:newTargetScale.x, y:newTargetScale.y});
+
+		//this.getContent().scale.x = this.getContent().scale.y = this.scales.min + this.scales.max - target.getContent().scale.x;		
 	},
 	shoot:function(){
 		if(this.shootAcum <= 0){
@@ -553,6 +590,223 @@ var Fire = Entity.extend({
             TweenLite.to(this.getContent().scale, 0.3, {x:0.2, y:0.2, onComplete:function(){self.kill = true;}});
         }
     },
+});
+
+/*jshint undef:false */
+var GameController = Class.extend({
+    init:function(){
+    	APP.mapData = {
+            cols: 11,
+            rows: 15
+        }
+
+        APP.gameVariables = {
+            verticalSpeed: windowHeight * 0.002,
+            // verticalSpeed: windowHeight * 0.002,
+            // enemyCounter: (windowHeight * 0.007) * windowHeight / APP.mapData.rows,
+            // enemyCounter: (windowHeight * 0.005) *this.getTileSize().height,
+            enemyRespaw: 5,
+            growFactor: windowWidth * 0.0001,
+            shootSpeedStandard: windowHeight * 0.008,
+        }
+        this.buildMap();
+    },
+    buildMap:function(){
+    	map = 
+        
+        "00500005000\n"+
+        "00050005000\n"+
+        "00005005000\n"+
+        "00000505000\n"+
+        "00000055000\n"+
+        "00000005000\n"+
+        "00000070000\n"+
+        "00000500000\n"+
+        "00005000000\n"+
+        "00050000000\n"+
+        "00500000000\n"+
+        "00000000050\n"+
+        "00800000050\n"+
+        "00000000050\n"+
+        "00000000090\n"+
+        "00000000050\n"+
+        "00000000050\n"+
+        "00000000050\n"+
+        "05000000050\n"+
+        "00000000000\n"+
+        "00000000000\n"+
+        "00000000000\n"+
+        "00000000000\n"+
+        "00010003050"
+        
+
+        this.mapArray = [];
+        tempLines = map.split("\n");
+        for (var i = tempLines.length - 1 ; i >=0 ; i--) {
+            tempMap = [];
+            for (var j = 0 ; j < tempLines[i].length; j++) {
+                tempMap.push(tempLines[i][j])
+            };
+            this.mapArray.push(tempMap);
+        };
+        // console.log(this.mapArray);
+
+        this.getEntityList();
+        // this.getInitScreenEntities();
+    },
+    getEntityList:function(){
+    	this.entityList = [];
+    	this.hasSomething = [];
+    	has = false;
+    	this.playersList = [];
+    	accum = APP.mapData.rows - this.mapArray.length;//APP.mapData.rows - 1;
+    	tempObj = {};
+    	for (var i = this.mapArray.length-1; i >= 0; i--) {
+    		// console.log(i);
+    	// for (var i = 0; i < this.mapArray.length ; i++) {
+    		has = false;
+    		tempArray = [];
+    		for (var j = 0; j < this.mapArray[i].length ; j++) {
+    			if(this.mapArray[i][j] > 0){
+    				tempObj = {
+    					type: this.mapArray[i][j],
+    					i:j,
+    					j:accum
+    				}
+    				if(this.mapArray[i][j] < 5){
+    					this.playersList.push(tempObj);
+    				}else{
+    					tempArray.push(tempObj);
+    				}
+    			}
+    		};
+
+    		this.entityList.push(tempArray);
+    		accum++
+    	};
+    	console.log(this.entityList);
+    },
+    updateEnemiesRow:function(id){
+    	entities = [];
+    	tempEntity = null;
+    	id = (this.entityList.length - APP.mapData.rows - id - 1);
+    	if(id < 0){
+    		console.log("ACABOU O LEVEL");
+    		return;
+    	}
+    	for (var i = this.entityList[id].length - 1; i >= 0; i--) {
+    		tempEntity = this.entityList[id][i];
+			if(tempEntity){
+				entities.push(
+					this.getEnemy(tempEntity.i,
+    					-1,
+    					tempEntity.type));
+			}
+    	}
+    	return entities
+    },
+    getInitScreenEntities:function(){
+    	entities = [];
+    	tempEntity = null;
+    	for (var i = this.entityList.length - 1; i >= this.entityList.length -  APP.mapData.rows; i--) {
+    		console.log(i);
+    		for (var j = this.entityList[i].length - 1; j >= 0; j--) {
+    			tempEntity = this.entityList[i][j];
+    			if(tempEntity){
+    				entities.push(this.getEnemy(tempEntity.i,
+	    				tempEntity.j,
+	    				tempEntity.type));
+    			}
+    		};
+    	}
+    	return entities
+    },
+    getRandomBehaviour:function(fixed){
+
+        behaviours = []
+        behaviours.push(new ScaleBehaviour({minScale:1, maxScale:2}));
+        behaviours.push(new DefaultBehaviour({minPosition:APP.getGameController().getTilePosition(2, -1,true).x, maxPosition:APP.getGameController().getTilePosition(APP.mapData.cols - 3, -1, true).x}));
+
+        if(fixed >= 0){
+            return behaviours[fixed];
+        }else{
+            return behaviours[Math.floor(Math.random() * behaviours.length)];
+        }
+    },
+    getEnemy:function(i,j,type){
+    	// console.log(i,j,type);
+    	tempSize = this.getTileSize().width
+    	if(type == 8){
+    		tempSize *= 2;
+    	}
+		tempEnemy = new Enemy("ENEMY", {width:tempSize});
+		tempEnemy.velocity.y = APP.gameVariables.verticalSpeed;
+        tempEnemy.build();
+        if(i == null || j == null){
+        	tempEnemy.getContent().position = this.getTilePosition(this.getRandom(3, APP.mapData.cols - 2), -1);
+        }else{
+        	if(type == 8){
+        		tempEnemy.getContent().position = this.getTilePosition(i,j);  
+			}else{
+        		tempEnemy.getContent().position = this.getTilePosition(i,j, true);        	
+        	}
+        	//se a largura é de dois tiles uso essa função
+        	//tempEnemy.getContent().position = this.getTilePosition(i,j);        	
+        }
+        if(type == 7){
+        	tempEnemy.behaviours.push(this.getRandomBehaviour(1));
+        }
+        if(type == 9){
+        	tempEnemy.behaviours.push(this.getRandomBehaviour(0));
+        }
+        return tempEnemy
+
+    },
+    getRandom:function(min, max){
+        ret = Math.floor(Math.random()*(max - min) + min);
+        return ret;
+    },
+    getTileSize:function(){
+         return {width:(windowWidth / APP.mapData.cols),
+            height:(windowHeight / APP.mapData.rows)}
+    },
+    getTilePosition:function(i,j, center){
+        if(i > APP.mapData.cols){
+            i = APP.mapData.cols;
+        }
+        if(j > APP.mapData.rows){
+            j = APP.mapData.rows;
+        }
+        var returnObj = {
+            x:i * (windowWidth / APP.mapData.cols),
+            y:j * (windowHeight / APP.mapData.rows),
+        }
+        if(center){
+            returnObj.x += (windowWidth / APP.mapData.cols)/2;
+            returnObj.y += (windowHeight / APP.mapData.rows)/2;
+        }
+
+        return returnObj;
+    },
+    update:function(rowID, enemyLayer){
+    	//rowID += APP.mapData.rows;
+    	if(this.currentRowID == rowID){
+    		return;
+    	}
+    	this.currentRowID = rowID;
+
+    	arrayEnemies = this.updateEnemiesRow(rowID);
+    	if(arrayEnemies){
+	    	for (var i = arrayEnemies.length - 1; i >= 0; i--) {
+	    		enemyLayer.addChild(arrayEnemies[i]);
+	    	};
+	    }
+    	if(this.mapArray.length >= rowID){
+    		return;
+    	}
+
+    	// console.log(this.mapArray[rowID]);
+    }
 });
 
 /*jshint undef:false */
@@ -1331,19 +1585,11 @@ var GameScreen = AbstractScreen.extend({
     init: function (label) {
         this._super(label);
 
-        APP.mapData = {
-            cols: 11,
-            rows: 15
-        }
 
-        APP.gameVariables = {
-            verticalSpeed: windowHeight * 0.002,
-            // enemyCounter: (windowHeight * 0.007) * windowHeight / APP.mapData.rows,
-            // enemyCounter: (windowHeight * 0.005) *this.getTileSize().height,
-            enemyRespaw: 5,
-            growFactor: windowWidth * 0.0001,
-            shootSpeedStandard: windowHeight * 0.008,
-        }
+        
+
+
+        this.gameController = APP.getGameController();
 
         // console.log(APP.gameVariables.enemyCounter);
 
@@ -1370,34 +1616,7 @@ var GameScreen = AbstractScreen.extend({
             this.onAssetsLoaded();
         }
 
-    },
-    getRandom:function(min, max){
-        ret = Math.floor(Math.random()*(max - min) + min);
-        // console.log(ret,min, max);
-        return ret;
-    },
-    getTileSize:function(){
-         return {width:(windowWidth / APP.mapData.cols),
-            height:(windowHeight / APP.mapData.rows)}
-    },
-    getTilePosition:function(i,j, center){
-        if(i > APP.mapData.cols){
-            i = APP.mapData.cols;
-        }
-        if(j > APP.mapData.rows){
-            j = APP.mapData.rows;
-        }
-        returnObj = {
-            x:i * (windowWidth / APP.mapData.cols),
-            y:j * (windowHeight / APP.mapData.rows),
-        }
-        if(center){
-            returnObj.x += (windowWidth / APP.mapData.cols)/2;
-            returnObj.y += (windowHeight / APP.mapData.rows)/2;
-        }
-
-        return returnObj;
-    },
+    },    
     drawMapData:function(){
         for (var i = APP.mapData.cols - 1; i >= 0; i--) {
             tempLine = new PIXI.Graphics();
@@ -1456,42 +1675,38 @@ var GameScreen = AbstractScreen.extend({
 
         var self = this;
 
-        this.player1 = new Player(this.getTileSize().width/2,this,"PLAYER1",this.fireLayer);
-        this.player1.build();
-        this.entityLayer.addChild(this.player1);
-        this.player1.getContent().position.x = windowWidth/2;
-        this.player1.getContent().position.y = windowHeight/2;
 
 
+        this.players = [];
 
-        this.player2 = new Player(this.getTileSize().width/2,this,"PLAYER2",this.fireLayer);
-        this.player2.build();     
-        this.entityLayer.addChild(this.player2);
-        this.player2.getContent().position.x = windowWidth/1.5;
-        this.player2.getContent().position.y = windowHeight/1.5;
-
-        this.player1.collideCallback = this.player2.collideCallback = this.gameOver;
-        // APP.getStage().mouseup = APP.getStage().touchend = function(touchData){
-        //     self.player1.onMouseDown = false;
-        //     self.player2.onMouseDown = false;
-        // };
+        for (var i = this.gameController.playersList.length - 1; i >= 0; i--) {
+            tempPlayer  = new Player(this.gameController.getTileSize().width/2,this,"PLAYER" + i,this.fireLayer);
+            tempPlayer.build();
+            tempPlayer.collideCallback = this.gameOver;
+            this.entityLayer.addChild(tempPlayer);
+            tempObj = this.gameController.getTilePosition(this.gameController.playersList[i].i, this.gameController.playersList[i].j, true);
+            tempPlayer.startPosition = {x:tempObj.x,y:tempObj.y};
+            this.players.push(tempPlayer) ;
+        };
 
         this.gameHit = new PIXI.Graphics();
         this.gameHit.interactive = true;
         this.gameHit.beginFill(0xFF0000);
         this.gameHit.drawRect(0,0,windowWidth, windowHeight);
         this.gameContainer.addChild(this.gameHit);
-        this.gameHit.alpha = 0.1;
+        // this.gameHit.alpha = 0.1;
         this.gameHit.hitArea = new PIXI.Rectangle(0, 0, windowWidth, windowHeight);
-
 
         this.selecteds = [];
 
-        this.updateable = true;
+        this.updateable = false;
 
         this.addChild(this.layerManager);
 
-        this.players = [this.player1, this.player2];
+        this.HUDLayer = new PIXI.DisplayObjectContainer();
+        this.addChild(this.HUDLayer);
+
+        
 
 
         this.label = new PIXI.Text("", {font:"20px Arial", fill:"red"});
@@ -1509,15 +1724,32 @@ var GameScreen = AbstractScreen.extend({
 
         this.laneCounter = 0;
 
+        this.initHUD();
         
     },
+    initHUD:function(){
+        var self = this;
+
+        pauseButton = new DefaultButton("img/assets/Blob_red.png","img/assets/Blob_red.png");
+        pauseButton.build(this.gameController.getTileSize().width, this.gameController.getTileSize().height);
+        this.HUDLayer.addChild(pauseButton.getContent());
+
+        pauseButton.clickCallback = function(){
+            self.updateable = !self.updateable;
+        }
+
+
+        restartButton = new DefaultButton("img/assets/ennemy_Blob_blue.png","img/assets/ennemy_Blob_blue.png");
+        restartButton.build(this.gameController.getTileSize().width, this.gameController.getTileSize().height);
+        this.HUDLayer.addChild(restartButton.getContent());
+        restartButton.getContent().position.x = 100;
+
+        
+        restartButton.clickCallback = function(){
+            self.gameOver()
+        }
+    },
     reset:function(){
-        this.selectedPlayer = null;
-        this.touchDown = false;
-        this.currentPosition = null;
-        this.currentLocalPosition = null;
-        this.player1.reset();
-        this.player2.reset();
 
         this.lastTileCounter = -1;
         this.tileCounter = 0;
@@ -1528,8 +1760,18 @@ var GameScreen = AbstractScreen.extend({
         this.onReset = true;
         this.updateable = true;
 
-        this.player1.getContent().position = this.getTilePosition(3, 12, true);
-        this.player2.getContent().position = this.getTilePosition(7, 12, true);
+
+        for (var i = this.players.length - 1; i >= 0; i--) {
+            this.players[i].reset();
+            tempObj = this.gameController.getTilePosition(this.gameController.playersList[i].i, this.gameController.playersList[i].j, true);
+            this.players[i].startPosition = {x:tempObj.x,y:tempObj.y};
+            this.players[i].getContent().position = this.players[i].startPosition;
+        };
+
+        tempEnemies = this.gameController.getInitScreenEntities();
+        for (var i = tempEnemies.length - 1; i >= 0; i--) {
+            this.enemyLayer.addChild(tempEnemies[i]);
+        };
         
     },
     gameOver:function()
@@ -1542,83 +1784,97 @@ var GameScreen = AbstractScreen.extend({
         this.reset();
         this.label.setText("gameOver");
     },
-    detectTouchCollision:function(touchData)
-    {
-        if(this.onReset){
-            return;
-        }
-        // console.log("detectTouchCollision");
-        var hasCollide = false;
-        for (var i = this.players.length - 1; i >= 0; i--) {
-            
-            if(!this.selectedPlayer && pointDistance(touchData.global.x, touchData.global.y,this.players[i].getContent().position.x, this.players[i].getContent().position.y) < this.players[i].range*1.5){                
-                hasCollide = true;
-                this.selectedPlayer = this.players[i];
-
-                this.currentLocalPosition = {x:touchData.global.x - this.players[i].getContent().position.x, y:touchData.global.y - this.players[i].getContent().position.y};
-            }
-        };    
-    },
     updateScales:function()
     {
-        if(this.selecteds[0].subType == this.player2.subType){
-            this.player1.updateScale(this.player2);
-        }else if(this.selecteds[0].subType == this.player1.subType){
-            this.player2.updateScale(this.player1);
-        }
-    },
-    getRandomBehaviour:function(fixed){
-
-        behaviours = []
-        behaviours.push(new ScaleBehaviour({minScale:1, maxScale:2}));
-        behaviours.push(new DefaultBehaviour({minPosition:this.getTilePosition(2, -1,true).x, maxPosition:this.getTilePosition(APP.mapData.cols - 3, -1, true).x}));
-
-        if(fixed){
-            return behaviours[fixed];
-        }else{
-            return behaviours[Math.floor(Math.random() * behaviours.length)];
-        }
-    },
-    updateEnemySpawner:function()
-    {
-        // if(this.enemyCounter < 0){
-        if(this.tileCounter % APP.gameVariables.enemyRespaw == 0 && this.lastTileCounter != this.tileCounter){
-            this.lastTileCounter = this.tileCounter;
-            this.enemyCounter = this.maxEnemyCounter;
-            if(Math.random() < 0.5){
-                tempEnemy = new Enemy("ENEMY", {width:this.getTileSize().width*2});
-                // tempEnemy = new Enemy("ENEMY", {width:this.getTileSize().width});
-                tempEnemy.build();
-                tempEnemy.velocity.y = this.verticalSpeed;
-                tempEnemy.getContent().position = this.getTilePosition(this.getRandom(3, APP.mapData.cols - 2), -1);
-                this.enemyLayer.addChild(tempEnemy);
-
-                rnd = Math.random();
-                if(rnd < 0.6){
-                    tempEnemy.behaviours.push(this.getRandomBehaviour(1));
+        var selected = 0;
+        for (var i = this.players.length - 1; i >= 0; i--) {
+            for (var j = this.selecteds.length - 1; j >= 0; j--) {
+                
+                if(this.selecteds[j].label == this.players[i].label){
+                    selected = i;                 
                 }
-
-            }else{
-                tempEnemy = new Enemy("ENEMY2", {width:this.getTileSize().width});
-                tempEnemy.build();
-                tempEnemy.velocity.y = this.verticalSpeed;
-                tempEnemy.getContent().position = this.getTilePosition(this.getRandom(1, APP.mapData.cols - 1), -1, true);
-                this.enemyLayer.addChild(tempEnemy);  
-
-                rnd = Math.random();
-                if(rnd < 0.3){
-                    tempEnemy.behaviours.push(this.getRandomBehaviour(0));
-                    tempEnemy.behaviours.push(this.getRandomBehaviour(1));
-                }else if(rnd < 0.6){
-                    tempEnemy.behaviours.push(this.getRandomBehaviour());
-                }              
+            };
+        };
+        for (var i = this.players.length - 1; i >= 0; i--) {
+            if(this.players[i].label != this.players[selected].label){
+                this.players[i].updateScale(this.players[selected],this.players.length);
             }
-            
-            // tempEnemy.getContent().position = this.getTilePosition(this.getRandom(1, APP.mapData.cols - 1), -1, true);            this.enemyLayer.addChild(tempEnemy);
-        }else{
-            this.enemyCounter --;
-        }
+        };
     },
+    updateShoots:function()
+    {
+        var selected = 0;
+        for (var i = this.players.length - 1; i >= 0; i--) {
+            for (var j = this.selecteds.length - 1; j >= 0; j--) {
+                
+                if(this.selecteds[j].label == this.players[i].label){
+                    selected = i;                 
+                }
+            };
+        };
+        for (var i = this.players.length - 1; i >= 0; i--) {
+            if(this.players[i].label != this.players[selected].label){
+                this.players[i].shoot();
+            }
+        };
+    },
+    // updateEnemySpawner:function()
+    // {
+    //     // if(this.enemyCounter < 0){
+
+    //     if(this.tileCounter % 1 == 0){
+    //         // if(this.mapArray)console.log(this.tileCounter);
+    //     }
+    //     //PROCURAR AQUI NO ARRAY SE TEM ALGUM INIMIGO NA LINHA ATRAVES DO TILECOUNTER
+    //     // this.lastTileCounter = this.tileCounter;
+    //     if(this.tileCounter % APP.gameVariables.enemyRespaw == 0 && this.lastTileCounter != this.tileCounter){
+    //             this.lastTileCounter = this.tileCounter;
+    //         this.enemyCounter = this.maxEnemyCounter;
+    //         if(Math.random() < 0.5){
+    //             tempEnemy = new Enemy("ENEMY", {width:this.gameController.getTileSize().width*2});
+    //             // tempEnemy = new Enemy("ENEMY", {width:this.gameController.getTileSize().width});
+    //             tempEnemy.build();
+    //             tempEnemy.velocity.y = this.verticalSpeed;
+    //             tempEnemy.getContent().position = this.gameController.getTilePosition(this.gameController.getRandom(3, APP.mapData.cols - 2), -1);
+    //             this.enemyLayer.addChild(tempEnemy);
+
+    //             rnd = Math.random();
+    //             if(rnd < 0.6){
+    //                 tempEnemy.behaviours.push(this.gameController.getRandomBehaviour(1));
+    //             }
+
+    //         }else{
+    //             tempEnemy = new Enemy("ENEMY2", {width:this.gameController.getTileSize().width});
+    //             tempEnemy.build();
+    //             tempEnemy.velocity.y = this.verticalSpeed;
+    //             tempEnemy.getContent().position = this.gameController.getTilePosition(this.gameController.getRandom(1, APP.mapData.cols - 1), -1, true);
+    //             this.enemyLayer.addChild(tempEnemy);  
+
+    //             rnd = Math.random();
+    //             if(rnd < 0.3){
+    //                 tempEnemy.behaviours.push(this.gameController.getRandomBehaviour(0));
+    //                 tempEnemy.behaviours.push(this.gameController.getRandomBehaviour(1));
+    //             }else if(rnd < 0.6){
+    //                 tempEnemy.behaviours.push(this.gameController.getRandomBehaviour());
+    //             }              
+    //             tempEnemy.behaviours.push(this.gameController.getRandomBehaviour());
+    //             tempEnemy.behaviours.push(this.gameController.getRandomBehaviour());
+    //             tempEnemy.behaviours.push(this.gameController.getRandomBehaviour());
+    //             tempEnemy.behaviours.push(this.gameController.getRandomBehaviour());
+    //             tempEnemy.behaviours.push(this.gameController.getRandomBehaviour());
+    //             tempEnemy.behaviours.push(this.gameController.getRandomBehaviour());
+    //             tempEnemy.behaviours.push(this.gameController.getRandomBehaviour());
+    //             tempEnemy.behaviours.push(this.gameController.getRandomBehaviour());
+    //             tempEnemy.behaviours.push(this.gameController.getRandomBehaviour());
+    //             tempEnemy.behaviours.push(this.gameController.getRandomBehaviour());
+    //             tempEnemy.behaviours.push(this.gameController.getRandomBehaviour());
+    //         }
+            
+    //         // tempEnemy.getContent().position = this.gameController.getTilePosition(this.getRandom(1, APP.mapData.cols - 1), -1, true);            this.enemyLayer.addChild(tempEnemy);
+    //     }else{
+    //         this.enemyCounter --;
+    //     }
+    // },
     addSelected:function(entity){
         var has = false;
         for (var i = this.selecteds.length - 1; i >= 0; i--) {
@@ -1637,30 +1893,25 @@ var GameScreen = AbstractScreen.extend({
             }
         };
     },
+    updateSelecteds:function(){
+        for (var i = this.players.length - 1; i >= 0; i--) {
+            if(this.players[i].mouseDown){
+                this.addSelected(this.players[i]);
+            }else{
+                this.removeSelected(this.players[i]);
+            }
+        };
+    },
     update:function()
     {
         if(!this.updateable){
             return;
         }
         if(this.layerManager){
-            this.updateEnemySpawner();
-            if(this.player1.mouseDown){
-                this.addSelected(this.player1);
-            }else{
-                this.removeSelected(this.player1);
-            }
-            if(this.player2.mouseDown){
-                this.addSelected(this.player2);
-            }else{
-                this.removeSelected(this.player2);
-            }
+            this.updateSelecteds();
             if(this.selecteds.length == 1){
                 this.updateScales();
-                if(this.selecteds[0].subType === this.player1.subType){
-                    this.player2.shoot();
-                }else{
-                    this.player1.shoot();                    
-                }
+                this.updateShoots();
             }else if(this.selecteds.length == 2){
                 for (var i = this.selecteds.length - 1; i >= 0; i--) {
                     this.selecteds[i].toAverrageScale();
@@ -1671,8 +1922,16 @@ var GameScreen = AbstractScreen.extend({
 
             this.updateCollisions();
 
+            
+
             this.laneCounter += this.verticalSpeed;
-            this.tileCounter = Math.floor(this.laneCounter / this.getTileSize().height);
+            this.tileCounter = Math.floor(this.laneCounter / this.gameController.getTileSize().height);
+
+
+            this.gameController.update(this.tileCounter, this.enemyLayer);
+
+            // if(this.tileCounter > this.lastTileCounter)
+                // this.updateEnemySpawner();
             this.label2.setText(this.tileCounter);
         }
 
@@ -1695,9 +1954,13 @@ var GameScreen = AbstractScreen.extend({
                 tempPlayer.goTo(targetPosition, true);
             }
         }
-        this.entityLayer.collideChilds(this.player1);
-        this.enemyLayer.collideChilds(this.player2);
-        this.enemyLayer.collideChilds(this.player1);
+        for (var i = this.players.length - 1; i >= 0; i--) {
+            this.entityLayer.collideChilds(this.players[i])
+            this.enemyLayer.collideChilds(this.players[i]);
+        };
+        // this.entityLayer.collideChilds(this.player1);
+        // this.enemyLayer.collideChilds(this.player2);
+        // this.enemyLayer.collideChilds(this.player1);
     }
 });
 

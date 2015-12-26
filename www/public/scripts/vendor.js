@@ -1032,7 +1032,7 @@ var DefaultButton = Class.extend({
 		if(height)
 			this.shapeButton.height = this.height;
 
-		this.shapeButton.setInteractive(true);
+		this.shapeButton.interactive = true;
 
 		this.shapeButton.mousedown = this.shapeButton.touchstart = function(data){
 			if(that.mouseDownCallback != null)
@@ -1045,7 +1045,7 @@ var DefaultButton = Class.extend({
         // set the mouseup and touchend callback..
         this.shapeButton.mouseup = this.shapeButton.touchend = this.shapeButton.touchoutside = this.shapeButton.mouseuoutside = this.shapeButton.touchendoutside = function(data){
            	this.isdown = false;
-            console.log(data);
+            // console.log(data);
         	if(that.mouseUpCallback != null)
         		that.mouseUpCallback();
 
@@ -1090,7 +1090,7 @@ var DefaultButton = Class.extend({
             // click!
             if(that.clickCallback != null)
             	that.clickCallback();
-            console.log("TAP!!");
+            // console.log("TAP!!");
             //this.alpha = 0.5;
         }
     },

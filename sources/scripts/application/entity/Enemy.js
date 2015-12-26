@@ -16,7 +16,7 @@ var Enemy = Entity.extend({
         this.debugContainer = new PIXI.DisplayObjectContainer();
         this.entityContainer.addChild(this.debugContainer);
 
-        this.debugPolygon(0xFF0000,true)
+        // this.debugPolygon(0xFF0000,true)
 
         this.playerContainer = new PIXI.DisplayObjectContainer();
         this.entityContainer.addChild(this.playerContainer);
