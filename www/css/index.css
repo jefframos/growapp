@@ -20,6 +20,19 @@
     -webkit-tap-highlight-color: rgba(0,0,0,0); /* make transparent link selection, adjust last value opacity 0 to 1.0 */
 }
 
+@font-face {
+    font-family: 'barrocoregular';
+    src: url('font/barroco-webfont.eot');
+    src: url('font/barroco-webfont.eot?#iefix') format('embedded-opentype'),
+         url('font/barroco-webfont.woff2') format('woff2'),
+         url('font/barroco-webfont.woff') format('woff'),
+         url('font/barroco-webfont.ttf') format('truetype'),
+         url('font/barroco-webfont.svg#barrocoregular') format('svg');
+    font-weight: normal;
+    font-style: normal;
+
+}
+
 body {
     -webkit-touch-callout: none;                /* prevent callout to copy image, etc when tap to hold */
     -webkit-text-size-adjust: none;             /* prevent webkit from resizing text to fit */

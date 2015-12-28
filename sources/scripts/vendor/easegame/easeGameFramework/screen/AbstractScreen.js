@@ -114,6 +114,15 @@ var AbstractScreen = Class.extend({
 		container.removeChild(this.getContent());
 		nextScreen.transitionIn();
 	},
+	pause:function(){
+		this.updateable = false;
+    },
+    unpause:function(){
+    	this.updateable = true;
+    },
+    togglePause:function(){
+    	this.updateable = !this.updateable;
+    },
 	destroy:function()
 	{
 		if(AbstractScreen.debug)console.log('destroy', this.screenLabel);

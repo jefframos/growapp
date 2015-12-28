@@ -87,7 +87,7 @@ var Player = Entity.extend({
         debugPolygon = new PIXI.Graphics();
         // debugPolygon.lineStyle(0.5,color);
         debugPolygon.beginFill(color);
-        debugPolygon.drawCircle(0,0,this.range * 1.5);
+        debugPolygon.drawCircle(0,0,this.range * 1.6);
         debugPolygon.alpha = force?0:0.5;
         this.hitContainer.addChild(debugPolygon);
     },

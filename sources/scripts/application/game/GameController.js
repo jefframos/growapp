@@ -2,8 +2,8 @@
 var GameController = Class.extend({
     init:function(){
     	APP.mapData = {
-            cols: 11,
-            rows: 15
+            cols: 9,
+            rows: 12
         }
 
         APP.gameVariables = {
@@ -20,30 +20,40 @@ var GameController = Class.extend({
     buildMap:function(){
     	map = 
         
-        "00500005000\n"+
-        "00050005000\n"+
-        "00005005000\n"+
-        "00000505000\n"+
-        "00000055000\n"+
-        "00000005000\n"+
-        "00000070000\n"+
-        "00000500000\n"+
-        "00005000000\n"+
-        "00050000000\n"+
-        "00500000000\n"+
-        "00000000050\n"+
-        "00800000050\n"+
-        "00000000050\n"+
-        "00000000090\n"+
-        "00000000050\n"+
-        "00000000050\n"+
-        "00000000050\n"+
-        "05000000050\n"+
-        "00000000000\n"+
-        "00000000000\n"+
-        "00000000000\n"+
-        "00000000000\n"+
-        "00010003050"
+        "009000050\n"+
+        "000000050\n"+
+        "000050050\n"+
+        "000000050\n"+
+        "000000000\n"+
+        "000000000\n"+
+        "000000700\n"+
+        "000000000\n"+
+        "000000000\n"+
+        "000000000\n"+
+        "008000080\n"+
+        "000000000\n"+
+        "008000000\n"+
+        "000000000\n"+
+        "000000000\n"+
+        "000000000\n"+
+        "000000000\n"+
+        "000000000\n"+
+        "050000000\n"+
+        "000000000\n"+
+        "000000000\n"+
+        "000000000\n"+
+        "000000000\n"+
+        "000000000\n"+
+        "000000000\n"+
+        "000000000\n"+
+        "000000000\n"+
+        "000000000\n"+
+        "000000000\n"+
+        "000000000\n"+
+        "000000000\n"+
+        "000000000\n"+
+        "000102000\n"+
+        "000000000"
         
 
         this.mapArray = [];
@@ -90,7 +100,7 @@ var GameController = Class.extend({
     		this.entityList.push(tempArray);
     		accum++
     	};
-    	console.log(this.entityList);
+    	// console.log(this.entityList);
     },
     updateEnemiesRow:function(id){
     	entities = [];
@@ -115,7 +125,7 @@ var GameController = Class.extend({
     	entities = [];
     	tempEntity = null;
     	for (var i = this.entityList.length - 1; i >= this.entityList.length -  APP.mapData.rows; i--) {
-    		console.log(i);
+    		// console.log(i);
     		for (var j = this.entityList[i].length - 1; j >= 0; j--) {
     			tempEntity = this.entityList[i][j];
     			if(tempEntity){
@@ -168,13 +178,20 @@ var GameController = Class.extend({
         return tempEnemy
 
     },
+    getSize:function(i, j){
+        return {width:(this.getTileSize().width * i),
+            height:(this.getTileSize().height * j)}
+    },
     getRandom:function(min, max){
         ret = Math.floor(Math.random()*(max - min) + min);
         return ret;
     },
     getTileSize:function(){
-         return {width:(windowWidth / APP.mapData.cols),
+    	if(this.gameTileSize == null){
+    		this.gameTileSize = {width:(windowWidth / APP.mapData.cols),
             height:(windowHeight / APP.mapData.rows)}
+    	}
+        return this.gameTileSize;
     },
     getTilePosition:function(i,j, center){
         if(i > APP.mapData.cols){

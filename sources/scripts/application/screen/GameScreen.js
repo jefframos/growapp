@@ -2,15 +2,7 @@
 var GameScreen = AbstractScreen.extend({
     init: function (label) {
         this._super(label);
-
-
-        
-
-
         this.gameController = APP.getGameController();
-
-        // console.log(APP.gameVariables.enemyCounter);
-
     },
     destroy: function () {
         this._super();
@@ -20,12 +12,7 @@ var GameScreen = AbstractScreen.extend({
         this.updateable = false;
         this.gameContainer = new PIXI.DisplayObjectContainer();
         this.addChild(this.gameContainer);
-        var assetsToLoader = ["img/assets/Blob_red.png",
-        "img/assets/ennemy_Blob_blue.png",
-        "img/assets/Floor.png",
-        "img/assets/SideWall.png",
-        "img/assets/teste1.png"
-        ];
+        var assetsToLoader = [];
         // var assetsToLoader = ["img/dragon.json"];
         if(assetsToLoader.length > 0){
             this.loader = new PIXI.AssetLoader(assetsToLoader);
@@ -55,10 +42,41 @@ var GameScreen = AbstractScreen.extend({
             tempLine.alpha = 0.5;
             this.addChild(tempLine);
         };
+
     },
-    showModal:function(){
+    showTopHUD:function(){
+        TweenLite.to(this.tupHUD, 0.5, {y:0});
     },
-    hideModal:function(force){
+    hideTopHUD:function(){
+        TweenLite.to(this.tupHUD, 0.5, {y:-this.tupHUD.height});
+    },
+    showPauseModal:function(){
+        this.hideTopHUD();
+        this.pauseModal.show();
+    },
+    hidePauseModal:function(){
+        this.showTopHUD();
+        this.pauseModal.hide(true);
+        this.unpause();
+    },
+    showEndModal:function(){
+        this.hideTopHUD();
+        this.endModal.show();
+    },
+    hideEndModal:function(){
+        this.showTopHUD();
+        this.reset();
+    },
+    showStartModal:function(){
+        this.pauseModal.hide(true);
+        this.pause();
+        this.hideTopHUD();
+        this.startModal.show();
+    },
+    hideStartModal:function(){
+        console.log("HIDE HERE");
+        this.showTopHUD();
+        this.start();
     },
     createModal:function(){
     },
@@ -66,6 +84,7 @@ var GameScreen = AbstractScreen.extend({
     },
     onAssetsLoaded:function()
     {
+        console.log("ASSETS LOAD");
         this._super();
         this.layerManager = new LayerManager();
         this.environmentLayer = new Layer("Environment");
@@ -128,15 +147,14 @@ var GameScreen = AbstractScreen.extend({
 
 
         this.label = new PIXI.Text("", {font:"20px Arial", fill:"red"});
-        this.addChild(this.label);
+        // this.addChild(this.label);
 
-        this.label2 = new PIXI.Text("", {font:"20px Arial", fill:"red"});
-        this.addChild(this.label2);
-        this.label2.position.y = 200;
+        // this.label2 = new PIXI.Text("", {font:"20px Arial", fill:"red"});
+        // this.addChild(this.label2);
+        // this.label2.position.y = 200;
 
 
 
-        this.reset();
 
         this.drawMapData();
 
@@ -144,31 +162,68 @@ var GameScreen = AbstractScreen.extend({
 
         this.initHUD();
         
+        this.reset();
     },
     initHUD:function(){
         var self = this;
 
-        pauseButton = new DefaultButton("img/assets/Blob_red.png","img/assets/Blob_red.png");
-        pauseButton.build(this.gameController.getTileSize().width, this.gameController.getTileSize().height);
-        this.HUDLayer.addChild(pauseButton.getContent());
+        this.tupHUD = new PIXI.DisplayObjectContainer();
+        backTopHud = new PIXI.Graphics();
+        backTopHud.beginFill(0);
+        backTopHud.drawRect(0,0,windowWidth, this.gameController.getTileSize().height);
+        this.tupHUD.addChild(backTopHud);
 
+
+        returnButtonLabel = new PIXI.Text("<", {font:"40px barrocoregular", fill:"white", stroke:"#006CD9", strokeThickness: 10});
+        returnButton = new DefaultButton("button_small_up.png","button_small_over.png");
+        returnButton.build(this.gameController.getTileSize().width, this.gameController.getTileSize().width);
+        returnButton.addLabel(returnButtonLabel,0,0,true,0,0);
+        this.tupHUD.addChild(returnButton.getContent());
+        returnButton.getContent().position = this.gameController.getTilePosition(1,0);
+        returnButton.getContent().position.y = this.gameController.getTileSize().height / 2 - returnButton.getContent().height / 2;
+
+        returnButton.clickCallback = function(){
+            APP.getTransition().transitionIn('Loader');
+        }
+
+        pauseButtonLabel = new PIXI.Text("II", {font:"40px barrocoregular", fill:"white", stroke:"#006CD9", strokeThickness: 10});    
+        pauseButton = new DefaultButton("button_small_up.png","button_small_over.png");
+        pauseButton.build(this.gameController.getTileSize().width, this.gameController.getTileSize().width);
+        pauseButton.addLabel(pauseButtonLabel,0,0,true,0,0);
+        this.tupHUD.addChild(pauseButton.getContent());
+        pauseButton.getContent().position = this.gameController.getTilePosition(7,0);
+        pauseButton.getContent().position.y = this.gameController.getTileSize().height / 2 - pauseButton.getContent().height / 2;
         pauseButton.clickCallback = function(){
-            self.updateable = !self.updateable;
+            self.showPauseModal();
         }
 
+        this.scoreLabel = new PIXI.Text("0", {font:"40px barrocoregular", fill:"white", stroke:"#006CD9", strokeThickness: 10});
+        this.tupHUD.addChild(this.scoreLabel);
+        scaleConverter(this.scoreLabel.height, this.gameController.getTileSize().width, 1, this.scoreLabel);
 
-        restartButton = new DefaultButton("img/assets/ennemy_Blob_blue.png","img/assets/ennemy_Blob_blue.png");
-        restartButton.build(this.gameController.getTileSize().width, this.gameController.getTileSize().height);
-        this.HUDLayer.addChild(restartButton.getContent());
-        restartButton.getContent().position.x = 100;
+        this.HUDLayer.addChild(this.tupHUD);
 
-        
-        restartButton.clickCallback = function(){
-            self.gameOver()
-        }
+        this.pauseModal = new PauseModal(this);
+        this.pauseModal.build();
+        this.HUDLayer.addChild(this.pauseModal.getContent());
+
+        this.endModal = new EndModal(this);
+        this.endModal.build();
+        this.HUDLayer.addChild(this.endModal.getContent());
+
+        this.startModal = new StartModal(this);
+        this.startModal.build();
+        this.HUDLayer.addChild(this.startModal.getContent());
+
+    },
+    updateScore:function(score){
+        this.scoreLabel.setText(score);
+        this.scoreLabel.position.x = windowWidth / 2 - this.scoreLabel.width / 2;
+        this.scoreLabel.position.y = this.gameController.getTileSize().height / 2 - this.scoreLabel.height / 2;
     },
     reset:function(){
 
+        console.log("RESET");
         this.lastTileCounter = -1;
         this.tileCounter = 0;
         this.laneCounter = 0;
@@ -176,7 +231,7 @@ var GameScreen = AbstractScreen.extend({
         this.enemyCounter = APP.gameVariables.enemyCounter;
         this.maxEnemyCounter = APP.gameVariables.enemyCounter;
         this.onReset = true;
-        this.updateable = true;
+        this.updateable = false;
 
 
         for (var i = this.players.length - 1; i >= 0; i--) {
@@ -190,16 +245,38 @@ var GameScreen = AbstractScreen.extend({
         for (var i = tempEnemies.length - 1; i >= 0; i--) {
             this.enemyLayer.addChild(tempEnemies[i]);
         };
+
+        this.showStartModal();
         
+    },
+    start:function(){
+        console.log("START");
+        this.updateable = true;
+        // this.hideStartModal();
+        this.showTopHUD();
+    },
+    destroyEntities:function(){
+        for (var i = this.enemyLayer.childs.length - 1; i >= 0; i--) {
+            // this.enemyLayer.childs[i].preKill();
+            this.enemyLayer.childs[i].kill = true;
+            this.enemyLayer.removeChild(this.enemyLayer.childs[i]);
+        };
+        for (var i = this.fireLayer.childs.length - 1; i >= 0; i--) {
+            // this.fireLayer.childs[i].preKill();
+            this.fireLayer.childs[i].kill = true;
+            this.fireLayer.removeChild(this.fireLayer.childs[i]);
+        };
+    },
+    restart:function(){
+        console.log("RESTART");
+        this.destroyEntities();
+        this.reset();
     },
     gameOver:function()
     {
-        for (var i = this.enemyLayer.childs.length - 1; i >= 0; i--) {
-            this.enemyLayer.childs[i].preKill();
-            // this.enemyLayer.removeChild(this.enemyLayer.childs[i]);
-        };
+        this.destroyEntities();
         this.updateable = false;
-        this.reset();
+        this.showEndModal();
         this.label.setText("gameOver");
     },
     updateScales:function()
@@ -236,63 +313,6 @@ var GameScreen = AbstractScreen.extend({
             }
         };
     },
-    // updateEnemySpawner:function()
-    // {
-    //     // if(this.enemyCounter < 0){
-
-    //     if(this.tileCounter % 1 == 0){
-    //         // if(this.mapArray)console.log(this.tileCounter);
-    //     }
-    //     //PROCURAR AQUI NO ARRAY SE TEM ALGUM INIMIGO NA LINHA ATRAVES DO TILECOUNTER
-    //     // this.lastTileCounter = this.tileCounter;
-    //     if(this.tileCounter % APP.gameVariables.enemyRespaw == 0 && this.lastTileCounter != this.tileCounter){
-    //             this.lastTileCounter = this.tileCounter;
-    //         this.enemyCounter = this.maxEnemyCounter;
-    //         if(Math.random() < 0.5){
-    //             tempEnemy = new Enemy("ENEMY", {width:this.gameController.getTileSize().width*2});
-    //             // tempEnemy = new Enemy("ENEMY", {width:this.gameController.getTileSize().width});
-    //             tempEnemy.build();
-    //             tempEnemy.velocity.y = this.verticalSpeed;
-    //             tempEnemy.getContent().position = this.gameController.getTilePosition(this.gameController.getRandom(3, APP.mapData.cols - 2), -1);
-    //             this.enemyLayer.addChild(tempEnemy);
-
-    //             rnd = Math.random();
-    //             if(rnd < 0.6){
-    //                 tempEnemy.behaviours.push(this.gameController.getRandomBehaviour(1));
-    //             }
-
-    //         }else{
-    //             tempEnemy = new Enemy("ENEMY2", {width:this.gameController.getTileSize().width});
-    //             tempEnemy.build();
-    //             tempEnemy.velocity.y = this.verticalSpeed;
-    //             tempEnemy.getContent().position = this.gameController.getTilePosition(this.gameController.getRandom(1, APP.mapData.cols - 1), -1, true);
-    //             this.enemyLayer.addChild(tempEnemy);  
-
-    //             rnd = Math.random();
-    //             if(rnd < 0.3){
-    //                 tempEnemy.behaviours.push(this.gameController.getRandomBehaviour(0));
-    //                 tempEnemy.behaviours.push(this.gameController.getRandomBehaviour(1));
-    //             }else if(rnd < 0.6){
-    //                 tempEnemy.behaviours.push(this.gameController.getRandomBehaviour());
-    //             }              
-    //             tempEnemy.behaviours.push(this.gameController.getRandomBehaviour());
-    //             tempEnemy.behaviours.push(this.gameController.getRandomBehaviour());
-    //             tempEnemy.behaviours.push(this.gameController.getRandomBehaviour());
-    //             tempEnemy.behaviours.push(this.gameController.getRandomBehaviour());
-    //             tempEnemy.behaviours.push(this.gameController.getRandomBehaviour());
-    //             tempEnemy.behaviours.push(this.gameController.getRandomBehaviour());
-    //             tempEnemy.behaviours.push(this.gameController.getRandomBehaviour());
-    //             tempEnemy.behaviours.push(this.gameController.getRandomBehaviour());
-    //             tempEnemy.behaviours.push(this.gameController.getRandomBehaviour());
-    //             tempEnemy.behaviours.push(this.gameController.getRandomBehaviour());
-    //             tempEnemy.behaviours.push(this.gameController.getRandomBehaviour());
-    //         }
-            
-    //         // tempEnemy.getContent().position = this.gameController.getTilePosition(this.getRandom(1, APP.mapData.cols - 1), -1, true);            this.enemyLayer.addChild(tempEnemy);
-    //     }else{
-    //         this.enemyCounter --;
-    //     }
-    // },
     addSelected:function(entity){
         var has = false;
         for (var i = this.selecteds.length - 1; i >= 0; i--) {
@@ -329,7 +349,7 @@ var GameScreen = AbstractScreen.extend({
             this.updateSelecteds();
             if(this.selecteds.length == 1){
                 this.updateScales();
-                this.updateShoots();
+                // this.updateShoots();
             }else if(this.selecteds.length == 2){
                 for (var i = this.selecteds.length - 1; i >= 0; i--) {
                     this.selecteds[i].toAverrageScale();
@@ -350,7 +370,8 @@ var GameScreen = AbstractScreen.extend({
 
             // if(this.tileCounter > this.lastTileCounter)
                 // this.updateEnemySpawner();
-            this.label2.setText(this.tileCounter);
+            // this.label2.setText(this.tileCounter);
+            this.updateScore(this.tileCounter);
         }
 
     },
