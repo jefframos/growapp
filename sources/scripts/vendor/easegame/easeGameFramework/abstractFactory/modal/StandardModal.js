@@ -17,7 +17,7 @@ var StandardModal = Class.extend({
     	this.backModal.interactive = true;
     	var self = this;
     	this.backModal.mousedown = this.backModal.touchstart = function(data){
-    		self.hide();
+    		// self.hide();
     	}
        	this.container.addChild(this.modalContainer);
     },

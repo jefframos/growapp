@@ -308,7 +308,7 @@ var GameScreen = AbstractScreen.extend({
             };
         };
         for (var i = this.players.length - 1; i >= 0; i--) {
-            if(this.players[i].label != this.players[selected].label){
+            if(this.players[i].label == this.players[selected].label){
                 this.players[i].shoot();
             }
         };
@@ -349,7 +349,7 @@ var GameScreen = AbstractScreen.extend({
             this.updateSelecteds();
             if(this.selecteds.length == 1){
                 this.updateScales();
-                // this.updateShoots();
+                this.updateShoots();
             }else if(this.selecteds.length == 2){
                 for (var i = this.selecteds.length - 1; i >= 0; i--) {
                     this.selecteds[i].toAverrageScale();

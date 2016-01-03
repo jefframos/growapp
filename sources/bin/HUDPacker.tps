@@ -36,9 +36,9 @@
         <key>dpi</key>
         <uint>72</uint>
         <key>dataFormat</key>
-        <string>json-array</string>
+        <string>json</string>
         <key>textureFileName</key>
-        <filename></filename>
+        <filename>../../www/img/assets/HUD/HUD.png</filename>
         <key>flipPVR</key>
         <false/>
         <key>pvrCompressionQuality</key>
@@ -74,7 +74,7 @@
         <key>jpgQuality</key>
         <uint>80</uint>
         <key>pngOptimizationLevel</key>
-        <uint>1</uint>
+        <uint>3</uint>
         <key>webpQualityLevel</key>
         <uint>101</uint>
         <key>textureSubPath</key>
@@ -102,7 +102,7 @@
         <key>algorithmSettings</key>
         <struct type="AlgorithmSettings">
             <key>algorithm</key>
-            <enum type="AlgorithmSettings::AlgorithmId">MaxRects</enum>
+            <enum type="AlgorithmSettings::AlgorithmId">Basic</enum>
             <key>freeSizeMode</key>
             <enum type="AlgorithmSettings::AlgorithmFreeSizeMode">Best</enum>
             <key>sizeConstraints</key>
@@ -145,7 +145,7 @@
             <key>data</key>
             <struct type="DataFile">
                 <key>name</key>
-                <filename></filename>
+                <filename>../../www/img/assets/HUD/HUD.json</filename>
             </struct>
         </map>
         <key>multiPack</key>
@@ -187,7 +187,14 @@
             <enum type="SpriteSettings::PivotPoint">Center</enum>
         </struct>
         <key>fileList</key>
-        <array/>
+        <array>
+            <filename>../../www/img/assets/HUD/button_small_up.png</filename>
+            <filename>../../www/img/assets/HUD/button_small_over.png</filename>
+            <filename>../../www/img/assets/HUD/back_modal_1.png</filename>
+            <filename>../../www/img/assets/HUD/game_logo.png</filename>
+            <filename>../../www/img/assets/HUD/button_up.png</filename>
+            <filename>../../www/img/assets/HUD/button_over.png</filename>
+        </array>
         <key>ignoreFileList</key>
         <array/>
         <key>replaceList</key>

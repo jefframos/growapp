@@ -89,20 +89,20 @@ var LoaderScreen = AbstractScreen.extend({
         }
 
 
+        if(possibleFullscreen()){
+            this.fullscreen = new DefaultButton("button_small_up.png","button_small_over.png");
+            this.fullscreen.build(APP.getGameController().getTileSize().width, APP.getGameController().getTileSize().width);
+            this.screenContainer.addChild(this.fullscreen.getContent());
 
-        this.fullscreen = new DefaultButton("button_small_up.png","button_small_over.png");
-        this.fullscreen.build(APP.getGameController().getTileSize().width, APP.getGameController().getTileSize().width);
-        this.screenContainer.addChild(this.fullscreen.getContent());
+            fullscreenLabel = new PIXI.Text("F", {font:"40px barrocoregular", fill:"white", stroke:"#006CD9", strokeThickness: 10});
 
-        fullscreenLabel = new PIXI.Text("F", {font:"40px barrocoregular", fill:"white", stroke:"#006CD9", strokeThickness: 10});
-
-        this.fullscreen.addLabel(fullscreenLabel,0,5,true,0,0)
-        this.fullscreen.getContent().position = APP.getGameController().getTilePosition(0,0, true);
-        this.fullscreen.getContent().position.y += APP.getGameController().getTileSize().height / 2 - this.fullscreen.getContent().height / 2;
-        this.fullscreen.clickCallback = function(){
-            fullscreen();
+            this.fullscreen.addLabel(fullscreenLabel,0,5,true,0,0)
+            this.fullscreen.getContent().position = APP.getGameController().getTilePosition(0,0, true);
+            this.fullscreen.getContent().position.y += APP.getGameController().getTileSize().height / 2 - this.fullscreen.getContent().height / 2;
+            this.fullscreen.clickCallback = function(){
+                fullscreen();
+            }
         }
-
 
         this.logoLabel = new PIXI.Text("©TaBien Studios", {font:"40px barrocoregular", fill:"white", stroke:"#006CD9", strokeThickness: 10});
         this.screenContainer.addChild(this.logoLabel);
@@ -110,6 +110,7 @@ var LoaderScreen = AbstractScreen.extend({
         this.logoLabel.position = APP.getGameController().getTilePosition(3,APP.mapData.rows - 1);
         this.logoLabel.position.y += APP.getGameController().getTileSize().height / 2 - this.logoLabel.height / 2;
 
+        // this.screenManager.change('Game');
         //this.screenContainer.position.x = windowWidth - this.screenContainer.width * 1.2;
         //this.screenContainer.position.y = windowHeight - this.screenContainer.height * 1.3;
 

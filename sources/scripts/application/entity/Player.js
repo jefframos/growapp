@@ -1,20 +1,43 @@
-var Player = Entity.extend({
+var Player = Class.extend({
 	init:function(range, parent, label, fireLayer){
-		this._super( true );
+		// this._super( true );
         this.updateable = false;
         this.deading = false;
 		this.scales = {min:1, max:2};
 		this.averrageScale = this.scales.min + (this.scales.max - this.scales.min) / 2;
-        this.range = this.standardRange = Math.floor(range / this.averrageScale);
+        this.range = Math.floor(range / this.averrageScale);
+        this.standardRange = Math.floor(range / this.averrageScale);
         this.width = 0;
         this.height = 0;
         this.type = 'player';
         this.label = label;
+        console.log(label);
         this.node = null;
         this.life = 5;
         this.startPosition = null;
         this.parentClass = parent;
         this.fireLayer = fireLayer;
+
+        if(label == "PLAYER0"){
+            this.standardVelocity = {x:8,y:8};
+            this.virtualVelocity = {x:0,y:0};
+            this.force = {x:0.5,y:0.5};
+            this.velocity = {x:0,y:0};
+            this.shootMaxAcum = 10;
+            this.color = 0x0000FF;
+            this.fireRange = this.standardRange * 0.3;
+            this.fireSpeed = - APP.gameVariables.shootSpeedStandard;
+        }else{
+            this.standardVelocity = {x:6,y:6};
+            this.virtualVelocity = {x:0,y:0};
+            this.force = {x:0.25,y:0.25};
+            this.velocity = {x:0,y:0};
+            this.shootMaxAcum = 30;
+            this.color = 0xFF0000;
+            this.fireRange = this.standardRange * 0.6;
+            this.fireSpeed = - APP.gameVariables.shootSpeedStandard * 0.7;
+        }
+
         this.entityContainer = new PIXI.DisplayObjectContainer();
 
         this.collisionDebug = new PIXI.DisplayObjectContainer();
@@ -28,7 +51,7 @@ var Player = Entity.extend({
 
 		this.standardScale = null;
 
-		this.hitPolygon(Math.random() * 0xFFFFFF,false);
+		this.hitPolygon(this.color,false);
 		// this.debugPolygon(Math.random() * 0xFFFFFF,true);
 
 		this.playerImage = new SimpleSprite("img/assets/teste1.png", {x:0.5, y:0.8});
@@ -46,6 +69,9 @@ var Player = Entity.extend({
             this.data = data;
             this.dragging = true;
             self.mouseDown = true;
+
+            var newPosition = this.data.getLocalPosition(self.getContent().parent);
+            self.goTo(newPosition);
         };
         
         this.hitContainer.mouseup = this.hitContainer.mouseupoutside = this.hitContainer.touchend = this.hitContainer.touchendoutside = function(data)
@@ -53,20 +79,28 @@ var Player = Entity.extend({
             this.dragging = false;
             this.data = null;
             self.mouseDown = false;
+
+            self.virtualVelocity = {x:0,y:0};
+            self.targetPosition = self.getPosition();
         };
         this.hitContainer.mousemove = this.hitContainer.touchmove = function(data)
         {
             if(this.dragging && self.mouseDown)
             {
                 var newPosition = this.data.getLocalPosition(self.getContent().parent);
-                newPosition.x -=  self.getPosition().x - newPosition.x;
-                newPosition.y -=  self.getPosition().y - newPosition.y;
+                // console.log(newPosition);
+                // newPosition.x -=  self.getPosition().x - newPosition.x;
+                // newPosition.y -=  self.getPosition().y - newPosition.y;
+
                 self.goTo(newPosition);
             }
         }
         
 
 	},
+    setParentLayer: function(layer){
+        this.layer = layer;
+    },
 	boundsPolygon: function(color, force){
         debugPolygon = new PIXI.Graphics();
         debugPolygon.lineStyle(1,color);
@@ -116,12 +150,17 @@ var Player = Entity.extend({
 
 	reset:function(){
 		this.shootAcum = 0;
-		this.shootMaxAcum = 50;
+		
 		this.getContent().scale.x = this.getContent().scale.y = this.averrageScale;
 		this.mouseDown = false;
 
 		this.updateable = true;
         this.collidable = true;
+
+        this.targetPosition = null;
+
+        this.virtualVelocity = {x:0,y:0};
+        this.velocity = {x:0,y:0};
 
 		// TweenLite.killTweensOf(this.getContent());
 		// TweenLite.killTweensOf(this.playerContainer);
@@ -146,11 +185,25 @@ var Player = Entity.extend({
 
 	},
 	goTo:function(position, force){
+        
+
+        this.targetPosition = position;
+        // console.log(this.targetPosition);
 		if(force){
 			this.getContent().position.x = position.x;
 			this.getContent().position.y = position.y;
 		}else{
-			TweenLite.to(this.getContent().position, 0.4,{x:position.x,y:position.y});
+		
+            // var angle = -Math.atan2(position.y - this.getContent().position.y, position.x - this.getContent().position.x) * 180 / Math.PI;
+            // angle += 90;
+            // angle = -angle / 180 * Math.PI;
+            // // this.getContent().rotation = angle;
+            // this.virtualVelocity.x =-Math.sin(angle) * this.standardVelocity.x;
+            // this.virtualVelocity.y = Math.cos(angle) * this.standardVelocity.y;
+
+
+
+        	// TweenLite.to(this.getContent().position, 0.4,{x:position.x,y:position.y});
 		}
 	},
 	getContent:function(){
@@ -197,18 +250,50 @@ var Player = Entity.extend({
 		if(this.shootAcum <= 0){
 			// console.log("this");
 			this.shootAcum = this.shootMaxAcum;
-			var fire = new Fire({x:0, y:- APP.gameVariables.shootSpeedStandard});
+			var fire = new Fire({x:0, y:this.fireSpeed}, this.fireRange, this.color);
 			fire.build();
-			fire.setPosition(this.getPosition().x, this.getPosition().y);
+			fire.setPosition(this.getPosition().x, this.getPosition().y - this.velocity.y - this.range);
 			this.fireLayer.addChild(fire);
 		}
 	},
 	update:function(){
-		this._super();
+		// this._super();
 		if(this.shootAcum > 0){
 			this.shootAcum --;
 		}
 		this.range = this.standardRange * this.getContent().scale.x;
+
+
+        if(this.targetPosition && pointDistance(this.targetPosition.x, this.targetPosition.y, this.getContent().position.x,this.getContent().position.y) < this.range){
+            this.velocity = {x:0, y:0};
+            this.virtualVelocity = {x:0, y:0};
+            this.targetPosition = null;
+        }
+        if(this.targetPosition){
+            var angle = -Math.atan2(this.targetPosition.y - this.getContent().position.y, this.targetPosition.x - this.getContent().position.x) * 180 / Math.PI;
+
+            // angle = angle * 180 / Math.PI;
+            angle += 90;
+            angle = -angle / 180 * Math.PI;
+            // this.getContent().rotation = angle;
+            this.virtualVelocity.x =-Math.sin(angle) * this.standardVelocity.x;
+            this.virtualVelocity.y = Math.cos(angle) * this.standardVelocity.y;
+        }
+
+        if(this.velocity.x < this.virtualVelocity.x && this.virtualVelocity.x > 0){
+            this.velocity.x += this.force.x;
+        }else if(this.velocity.x > this.virtualVelocity.x && this.virtualVelocity.x < 0){
+            this.velocity.x -= this.force.x;
+        }
+
+        if(this.velocity.y < this.virtualVelocity.y && this.virtualVelocity.y > 0){
+            this.velocity.y += this.force.y;
+        }else if(this.velocity.y > this.virtualVelocity.y && this.virtualVelocity.y < 0){
+            this.velocity.y -= this.force.y;
+        }
+
+        this.getContent().position.x += this.velocity.x;
+        this.getContent().position.y += this.velocity.y;
 	},
 	collide:function(arrayCollide){
 		// console.log(arrayCollide);

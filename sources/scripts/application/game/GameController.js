@@ -13,7 +13,7 @@ var GameController = Class.extend({
             // enemyCounter: (windowHeight * 0.005) *this.getTileSize().height,
             enemyRespaw: 5,
             growFactor: windowWidth * 0.0001,
-            shootSpeedStandard: windowHeight * 0.008,
+            shootSpeedStandard: windowHeight * 0.01,
         }
         this.buildMap();
     },
@@ -21,16 +21,16 @@ var GameController = Class.extend({
     	map = 
         
         "009000050\n"+
-        "000000050\n"+
-        "000050050\n"+
+        "000000060\n"+
+        "000060050\n"+
         "000000050\n"+
         "000000000\n"+
-        "000000000\n"+
+        "060000000\n"+
         "000000700\n"+
         "000000000\n"+
         "000000000\n"+
         "000000000\n"+
-        "008000080\n"+
+        "008000060\n"+
         "000000000\n"+
         "008000000\n"+
         "000000000\n"+
@@ -46,8 +46,33 @@ var GameController = Class.extend({
         "000000000\n"+
         "000000000\n"+
         "000000000\n"+
+        "060000000\n"+
         "000000000\n"+
         "000000000\n"+
+        "000000000\n"+
+        "000000000\n"+
+        "000000000\n"+
+        "000000000\n"+
+        // "000000000\n"+
+        // "000000000\n"+
+        // "000000000\n"+
+        // "000000000\n"+
+        // "000000000\n"+
+        // "000000000\n"+
+        // "000000000\n"+
+        // "000000000\n"+
+        // "000000000\n"+
+        // "000000000\n"+
+        // "000000000\n"+
+        // "000000000\n"+
+        // "000000000\n"+
+        // "000000000\n"+
+        // "000000000\n"+
+        // "000000000\n"+
+        // "000000000\n"+
+        // "000000000\n"+
+        // "000000000\n"+
+        // "000000000\n"+
         "000000000\n"+
         "000000000\n"+
         "000000000\n"+
@@ -152,10 +177,15 @@ var GameController = Class.extend({
     getEnemy:function(i,j,type){
     	// console.log(i,j,type);
     	tempSize = this.getTileSize().width
+        tempLabel = "ENEMY2";
     	if(type == 8){
     		tempSize *= 2;
     	}
-		tempEnemy = new Enemy("ENEMY", {width:tempSize});
+        if(type == 6){
+            tempLabel = "ENEMY";
+        }
+        console.log(tempLabel);
+		tempEnemy = new Enemy(tempLabel, {width:tempSize});
 		tempEnemy.velocity.y = APP.gameVariables.verticalSpeed;
         tempEnemy.build();
         if(i == null || j == null){

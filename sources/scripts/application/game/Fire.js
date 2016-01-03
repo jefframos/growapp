@@ -1,18 +1,19 @@
 /*jshint undef:false */
 var Fire = Entity.extend({
-    init:function(vel){
+    init:function(vel, range, color){
         // console.log(vel);
         this._super( true );
+        this.color = color;
         this.updateable = false;
         this.deading = false;
-        this.range = windowWidth * 0.02;
+        this.range =range;
         this.width = 1;
         this.height = 1;
         this.type = 'fire';
         this.node = null;
         this.velocity.x = vel.x;
         this.velocity.y = vel.y;
-        this.timeLive = 100;
+        this.timeLive = 800;
         this.power = 1;
         this.defaultVelocity = 1;
         this.entityContainer = new PIXI.DisplayObjectContainer();
@@ -37,7 +38,7 @@ var Fire = Entity.extend({
         this.updateable = true;
         this.collidable = true;
         // var self = this;
-        this.debugPolygon(0xFF0000);
+        this.debugPolygon(this.color);
     },
     update: function(){
         this._super();
