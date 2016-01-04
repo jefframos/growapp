@@ -11,7 +11,7 @@ var Player = Class.extend({
         this.height = 0;
         this.type = 'player';
         this.label = label;
-        console.log(label);
+        // console.log(label);
         this.node = null;
         this.life = 5;
         this.startPosition = null;
@@ -21,21 +21,23 @@ var Player = Class.extend({
         if(label == "PLAYER0"){
             this.standardVelocity = {x:8,y:8};
             this.virtualVelocity = {x:0,y:0};
-            this.force = {x:0.5,y:0.5};
+            this.force = {x:3,y:3};
             this.velocity = {x:0,y:0};
             this.shootMaxAcum = 10;
             this.color = 0x0000FF;
             this.fireRange = this.standardRange * 0.3;
-            this.fireSpeed = - APP.gameVariables.shootSpeedStandard;
+            this.firePower = 1;
+            this.fireSpeed = - APP.gameVariables.shootSpeedStandard * 1.3;
         }else{
-            this.standardVelocity = {x:6,y:6};
+            this.standardVelocity = {x:8,y:8};
             this.virtualVelocity = {x:0,y:0};
-            this.force = {x:0.25,y:0.25};
+            this.force = {x:2,y:2};
             this.velocity = {x:0,y:0};
             this.shootMaxAcum = 30;
             this.color = 0xFF0000;
             this.fireRange = this.standardRange * 0.6;
-            this.fireSpeed = - APP.gameVariables.shootSpeedStandard * 0.7;
+            this.firePower = 3;
+            this.fireSpeed = - APP.gameVariables.shootSpeedStandard;
         }
 
         this.entityContainer = new PIXI.DisplayObjectContainer();
@@ -51,14 +53,20 @@ var Player = Class.extend({
 
 		this.standardScale = null;
 
-		this.hitPolygon(this.color,false);
-		// this.debugPolygon(Math.random() * 0xFFFFFF,true);
+		this.hitPolygon(this.color,true);
+		this.debugPolygon(Math.random() * 0xFFFFFF,true);
 
 		this.playerImage = new SimpleSprite("img/assets/teste1.png", {x:0.5, y:0.8});
         this.playerContainer.addChild(this.playerImage.getContent());
+        this.playerImage.getContent().tint = this.color;
 
+        this.playerImage.getContent().rotation = -45 / 180 * 3.14;
+        // console.log(this.playerImage.getContent())
+        this.playerImage.getContent().scale.x = 1;
+        this.playerImage.getContent().scale.y = 2;
         this.getContent().interactive = true;
         this.hitContainer.interactive = true;
+
 
 
         this.mouseDown = false;
@@ -111,7 +119,7 @@ var Player = Class.extend({
     },
 	debugPolygon: function(color, force){
         debugPolygon = new PIXI.Graphics();
-        debugPolygon.lineStyle(1,0xFF0000);
+        debugPolygon.lineStyle(1,0x00FF00);
         // debugPolygon.beginFill(color);
         debugPolygon.drawCircle(0,0,this.range);
         // this.debugPolygon.alpha = 0.5;
@@ -119,9 +127,9 @@ var Player = Class.extend({
     },
 	hitPolygon: function(color, force){
         debugPolygon = new PIXI.Graphics();
-        // debugPolygon.lineStyle(0.5,color);
+        debugPolygon.lineStyle(0.5,color);
         debugPolygon.beginFill(color);
-        debugPolygon.drawCircle(0,0,this.range * 1.6);
+        debugPolygon.drawCircle(0,0,this.range * 2);
         debugPolygon.alpha = force?0:0.5;
         this.hitContainer.addChild(debugPolygon);
     },
@@ -138,7 +146,7 @@ var Player = Class.extend({
 
         this.growFactor = APP.gameVariables.growFactor;
 
-        scaleConverter(this.playerContainer.width, this.range * 2, 1, this.playerContainer);
+        scaleConverter(this.playerContainer.width, this.range * 4, 1, this.playerContainer);
 
     	this.standardScale = {x:0,y:0};
     	this.standardScale.x = this.playerContainer.scale.x;
@@ -162,27 +170,6 @@ var Player = Class.extend({
         this.virtualVelocity = {x:0,y:0};
         this.velocity = {x:0,y:0};
 
-		// TweenLite.killTweensOf(this.getContent());
-		// TweenLite.killTweensOf(this.playerContainer);
-		// TweenLite.killTweensOf(this.playerContainer.scale);
-
-		// var self = this;
-		// if(this.timeline){
-		// 	this.timeline.clear();
-		// 	this.timeline.kill();
-		// }
-		// this.timeline = new TimelineLite({onComplete:function(){
-		// 		self.timeline.restart();
-		// 	}
-		// });
-		// this.animationSpeedReference = 0.4;
-		// this.timeline.add(TweenLite.to(this.playerContainer.scale, this.animationSpeedReference * 0.3, {x:this.standardScale.x * 1.1,y:this.standardScale.y * 0.9}));
-		// this.timeline.add(TweenLite.to(this.playerContainer.scale, 0.2, {x:this.standardScale.x * 1.2,y:this.standardScale.y * 0.8}));
-		// this.timeline.add(TweenLite.to(this.playerContainer.scale, this.animationSpeedReference * 0.5, {x:this.standardScale.x * 0.9,y:this.standardScale.y * 1.1}));
-		// this.timeline.add(TweenLite.to(this.playerContainer.scale, this.animationSpeedReference * 0.2, {x:this.standardScale.x, y:this.standardScale.y}));
-
-		// this.timeline.resume();
-
 	},
 	goTo:function(position, force){
         
@@ -192,18 +179,6 @@ var Player = Class.extend({
 		if(force){
 			this.getContent().position.x = position.x;
 			this.getContent().position.y = position.y;
-		}else{
-		
-            // var angle = -Math.atan2(position.y - this.getContent().position.y, position.x - this.getContent().position.x) * 180 / Math.PI;
-            // angle += 90;
-            // angle = -angle / 180 * Math.PI;
-            // // this.getContent().rotation = angle;
-            // this.virtualVelocity.x =-Math.sin(angle) * this.standardVelocity.x;
-            // this.virtualVelocity.y = Math.cos(angle) * this.standardVelocity.y;
-
-
-
-        	// TweenLite.to(this.getContent().position, 0.4,{x:position.x,y:position.y});
 		}
 	},
 	getContent:function(){
@@ -250,10 +225,11 @@ var Player = Class.extend({
 		if(this.shootAcum <= 0){
 			// console.log("this");
 			this.shootAcum = this.shootMaxAcum;
-			var fire = new Fire({x:0, y:this.fireSpeed}, this.fireRange, this.color);
+			var fire = new Fire({x:0, y:this.fireSpeed}, this.fireRange, this.color, this.layer, this.firePower);
 			fire.build();
 			fire.setPosition(this.getPosition().x, this.getPosition().y - this.velocity.y - this.range);
-			this.fireLayer.addChild(fire);
+            this.layer.addChild(fire);
+			// this.fireLayer.addChild(fire);
 		}
 	},
 	update:function(){
@@ -299,14 +275,14 @@ var Player = Class.extend({
 		// console.log(arrayCollide);
         // console.log('fireCollide', arrayCollide[0].type);
         // console.log(arrayCollide[0].type);
-        if(this.parentClass){
-        	this.parentClass.gameOver();
-        	// this.preKill();
-        }
         if(this.collidable){
             if(arrayCollide[0].type === 'enemy'){
                 // this.getContent().tint = 0xff0000;
                 // this.preKill();
+                if(this.parentClass){
+                	this.parentClass.gameOver();
+                	// this.preKill();
+                }
                 // arrayCollide[0].hurt(this.power);
 
             }

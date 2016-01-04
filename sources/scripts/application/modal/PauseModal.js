@@ -1,7 +1,9 @@
 /*jshint undef:false */
 var PauseModal = StandardModal.extend({
-    init:function(mainScreen){
-    	this._super(mainScreen);       
+    init:function(mainScreen, hideCallback, restartCallback){
+        this._super(mainScreen);
+        this.hideCallback = hideCallback;
+        this.restartCallback = restartCallback;
     },
     build: function(){
     	this._super();
@@ -19,7 +21,7 @@ var PauseModal = StandardModal.extend({
     	this.label = new PIXI.Text("PAUSE", {font:"40px barrocoregular", fill:"white", stroke:"#E88726", strokeThickness: 10});
     	this.modalContainer.addChild(this.label);
     	scaleConverter(this.label.width, APP.getGameController().getTileSize().width*3, 1, this.label);
-    	this.label.position = APP.getGameController().getTilePosition(3,4);
+    	this.label.position = APP.getGameController().getTilePositionHUD(3,4);
     	this.label.position.y += APP.getGameController().getTileSize().height / 2 - this.label.height / 2;
 
 
@@ -30,12 +32,12 @@ var PauseModal = StandardModal.extend({
     	buttonRestartLabel = new PIXI.Text("RESTART", {font:"40px barrocoregular", fill:"white", stroke:"#006CD9", strokeThickness: 10});
 
         buttonRestart.addLabel(buttonRestartLabel,0,5,true,0,0)
-        buttonRestart.getContent().position = APP.getGameController().getTilePosition(2,APP.mapData.rows - 5);
+        buttonRestart.getContent().position = APP.getGameController().getTilePositionHUD(2,APP.mapData.rows - 5);
         buttonRestart.getContent().position.y += APP.getGameController().getTileSize().height / 2 - buttonRestart.getContent().height / 2;
         buttonRestart.clickCallback = function(){
             self.hide(false);
 
-            self.mainScreen.restart();
+            self.restartCallback(self.mainScreen);
         }
         this.modalContainer.addChild(buttonRestart.getContent());
 
@@ -48,12 +50,13 @@ var PauseModal = StandardModal.extend({
     	buttonContinueLabel = new PIXI.Text("CONTINUE", {font:"40px barrocoregular", fill:"white", stroke:"#006CD9", strokeThickness: 10});
 
         buttonContinue.addLabel(buttonContinueLabel,0,5,true,0,0)
-        buttonContinue.getContent().position = APP.getGameController().getTilePosition(2,APP.mapData.rows - 6);
+        buttonContinue.getContent().position = APP.getGameController().getTilePositionHUD(2,APP.mapData.rows - 6);
         buttonContinue.getContent().position.y += APP.getGameController().getTileSize().height / 2 - buttonContinue.getContent().height / 2;
         buttonContinue.clickCallback = function(){
             self.hide(true);
 
-            self.mainScreen.hidePauseModal();
+            self.hideCallback(self.mainScreen);
+            // self.mainScreen.hidePauseModal();
         }
         this.modalContainer.addChild(buttonContinue.getContent());
 

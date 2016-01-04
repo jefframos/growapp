@@ -16,24 +16,39 @@ var Enemy = Entity.extend({
         this.debugContainer = new PIXI.DisplayObjectContainer();
         this.entityContainer.addChild(this.debugContainer);
 
-        // this.debugPolygon(0xFF0000,true)
+        this.debugPolygon(0xFF0000,true)
 
         this.playerContainer = new PIXI.DisplayObjectContainer();
         this.entityContainer.addChild(this.playerContainer);
 
         if(this.label == "ENEMY2"){
-            this.playerImage = new SimpleSprite("img/assets/Blob_red.png", {x:0.5, y:0.5});
+            this.playerImage = new SimpleSprite("img/assets/Blob_red.png", {x:0.5, y:0.8});
         }else{
-            this.playerImage = new SimpleSprite("img/assets/ennemy_Blob_blue.png", {x:0.5, y:0.5});
+            this.playerImage = new SimpleSprite("img/assets/ennemy_Blob_blue.png", {x:0.5, y:0.8});
         }
         this.playerContainer.addChild(this.playerImage.getContent());
+        this.playerImage.cacheAsBitmap = true;
+        // this.playerContainer.addChild(this.playerImage.texture);
         // this.playerImage.getContent().width = this.range;
         scaleConverter(this.playerContainer.width, this.standardRange * 2, 1, this.playerContainer);
         //scaleConverter(this.playerContainer.width, this.range * 2, 1, this.playerContainer);
         this.standardScale = this.playerContainer.scale;
 
         this.behaviours = [];
+
+        this.playerContainer.rotation = -45 / 180 * 3.14
+        this.playerImage.getContent().scale.x = 1;
+        this.playerImage.getContent().scale.y = 2;
+
+        this.noDepth = false;
+       // this.playerImage.getContent().scale.y = 2
 	},
+    hurt:function(demage){
+        this.life -= demage;
+        if(this.life <= 0){
+            this.preKill();
+        }
+    },
 	debugPolygon: function(color, force){
         this.debugPolygon = new PIXI.Graphics();
         this.debugPolygon.lineStyle(0.5,color);

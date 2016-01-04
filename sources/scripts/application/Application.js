@@ -2,7 +2,7 @@
 var Application = AbstractApplication.extend({
 	init:function(){
         this._super(windowWidth, windowHeight);
-        this.stage.setBackgroundColor(0x3dc554);
+        this.stage.setBackgroundColor(0);
 
 
 	},

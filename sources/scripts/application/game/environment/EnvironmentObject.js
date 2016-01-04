@@ -1,26 +1,35 @@
 var EnvironmentObject = Class.extend({
-	init:function(imgSrc, mainScale){
+	init:function(imgSrc, mainScale, correctionPosition){
+		this.correctionPosition = correctionPosition;
+		if(this.correctionPosition == null){
+			this.correctionPosition = {x:0,y:0};
+		}
 		this.environmentContainer = new PIXI.DisplayObjectContainer();
 
 		this.img = new SimpleSprite(imgSrc);
 		if( mainScale.x){
-			scaleConverter(this.img.getContent().width, windowWidth, mainScale.x, this.img.getContent());
+			this.img.getContent().width = mainScale.x;
+			// scaleConverter(this.img.getContent().width, windowWidth, mainScale.x, this.img.getContent());
 		} if( mainScale.y){
-				scaleConverter(this.img.getContent().height, windowHeight, mainScale.y, this.img.getContent());
-			}
+			this.img.getContent().height = mainScale.y;
+			// scaleConverter(this.img.getContent().height, windowHeight, mainScale.y, this.img.getContent());
+		}
 
 		this.assetList = [];
 
-		var totAssets = Math.ceil(windowHeight / this.img.getContent().height) + 1;
+		var totAssets = Math.ceil((windowHeight * 1.5) / this.img.getContent().height) + 1;
 		for (var i = 0; i < totAssets; i++) {
 			this.img = new SimpleSprite(imgSrc);
 			this.environmentContainer.addChild(this.img.getContent());
 			if( mainScale.x){
-				scaleConverter(this.img.getContent().width, windowWidth, mainScale.x, this.img.getContent());
+				this.img.getContent().width = mainScale.x;
+				// scaleConverter(this.img.getContent().width, windowWidth, mainScale.x, this.img.getContent());
 			}else if( mainScale.y){
-				scaleConverter(this.img.getContent().height, windowHeight, mainScale.y, this.img.getContent());
+				this.img.getContent().height = mainScale.y;
+				// scaleConverter(this.img.getContent().height, windowHeight, mainScale.y, this.img.getContent());
 			}
-			this.img.getContent().position.y = this.img.getContent().height * i - this.img.getContent().height;
+			this.img.getContent().position.y = (this.img.getContent().height - this.correctionPosition.y) * i - this.img.getContent().height ;
+
 			this.assetList.push(this.img);
 		};
 
@@ -33,14 +42,12 @@ var EnvironmentObject = Class.extend({
 			this.assetList[i].getContent().position.x += this.velocity.x;
 			this.assetList[i].getContent().position.y += this.velocity.y;
 			if(this.velocity.y > 0){
-				if(this.assetList[i].getContent().position.y + this.velocity.y > windowHeight){
-					
-					this.assetList[i].getContent().position.y = this.getMinPosition() -this.assetList[i].getContent().height + this.velocity.y;
-
+				if(this.assetList[i].getContent().position.y + this.velocity.y > windowHeight * 1.5){					
+					this.assetList[i].getContent().position.y = this.getMinPosition() -this.assetList[i].getContent().height + this.velocity.y + this.correctionPosition.y;
 				}
 			}else if(this.velocity.y < 0){
 				if(this.assetList[i].getContent().position.y + this.velocity.y + this.assetList[i].getContent().height < 0){
-					this.assetList[i].getContent().position.y = this.getMaxPosition() + this.assetList[i].getContent().height + this.velocity.y;
+					this.assetList[i].getContent().position.y = this.getMaxPosition() + this.assetList[i].getContent().height + this.velocity.y + this.correctionPosition.y;
 				}
 			}
 		};

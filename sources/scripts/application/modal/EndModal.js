@@ -1,7 +1,8 @@
 /*jshint undef:false */
 var EndModal = StandardModal.extend({
-    init:function(mainScreen){
-    	this._super(mainScreen);       
+    init:function(mainScreen, hideCallback){
+    	this._super(mainScreen);
+        this.hideCallback = hideCallback;
     },
     build: function(){
     	this._super();
@@ -18,7 +19,7 @@ var EndModal = StandardModal.extend({
     	this.label = new PIXI.Text("END GAME", {font:"40px barrocoregular", fill:"white", stroke:"#E88726", strokeThickness: 10});
     	this.modalContainer.addChild(this.label);
     	scaleConverter(this.label.width, APP.getGameController().getTileSize().width*3, 1, this.label);
-    	this.label.position = APP.getGameController().getTilePosition(3,4);
+    	this.label.position = APP.getGameController().getTilePositionHUD(3,4);
     	this.label.position.y += APP.getGameController().getTileSize().height / 2 - this.label.height / 2;
 
 
@@ -29,12 +30,13 @@ var EndModal = StandardModal.extend({
         buttonContinueLabel = new PIXI.Text("RESTART", {font:"40px barrocoregular", fill:"white", stroke:"#006CD9", strokeThickness: 10});
 
         buttonContinue.addLabel(buttonContinueLabel,0,5,true,0,0)
-        buttonContinue.getContent().position = APP.getGameController().getTilePosition(2,APP.mapData.rows - 5);
+        buttonContinue.getContent().position = APP.getGameController().getTilePositionHUD(2,APP.mapData.rows - 5);
         buttonContinue.getContent().position.y += APP.getGameController().getTileSize().height / 2 - buttonContinue.getContent().height / 2;
         buttonContinue.clickCallback = function(){
             self.hide();
             self.mainScreen.unpause();
-            self.mainScreen.hideEndModal();
+            self.hideCallback(self.mainScreen)
+            // self.mainScreen.hideEndModal();
         }
         this.modalContainer.addChild(buttonContinue.getContent());
 

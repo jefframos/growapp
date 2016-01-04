@@ -10,37 +10,60 @@ var GameScreen = AbstractScreen.extend({
     build: function () {
         this._super();
         this.updateable = false;
+
+        this.gameContainerMaster = new PIXI.DisplayObjectContainer();
+        this.addChild(this.gameContainerMaster);
+
         this.gameContainer = new PIXI.DisplayObjectContainer();
-        this.addChild(this.gameContainer);
+        this.gameContainerMaster.addChild(this.gameContainer);
+
+        this.gameGrid = new PIXI.DisplayObjectContainer();
+        // this.gameContainerMaster.addChild(this.gameGrid);
+
         var assetsToLoader = [];
-        // var assetsToLoader = ["img/dragon.json"];
         if(assetsToLoader.length > 0){
             this.loader = new PIXI.AssetLoader(assetsToLoader);
             this.initLoad();
         }else{
             this.onAssetsLoaded();
         }
-
+        
+        this.applyIsometric();
+       
     },    
+    applyIsometric:function(){
+        this.gameContainer.pivot = {x:windowWidth/2, y:windowHeight/2};
+        this.gameContainer.rotation = 45 /180*3.14;
+
+        this.gameGrid.pivot = {x:windowWidth/2, y:windowHeight/2};
+        this.gameGrid.rotation = 45 /180*3.14;
+
+
+        this.gameContainerMaster.scale.y = 0.5;
+        this.gameContainerMaster.x = windowWidth/2
+        this.gameContainerMaster.y = windowHeight/2
+    },
     drawMapData:function(){
-        for (var i = APP.mapData.cols - 1; i >= 0; i--) {
+        for (var i = APP.mapData.mapCols; i > 0; i--) {
             tempLine = new PIXI.Graphics();
-            tempLine.lineStyle(0.5,0);
+            tempLine.lineStyle(1,0);
             tempLine.moveTo(0,0);
             tempLine.lineTo(0, windowHeight);
-            tempLine.position.x = i * windowWidth / APP.mapData.cols;
-            tempLine.alpha = 0.5;
-            this.addChild(tempLine);
+            tempLine.position.x = i * APP.mapBounds.width / APP.mapData.mapCols;
+            // tempLine.alpha = 0.5;
+            // this.addChild(tempLine);
+            this.gameGrid.addChild(tempLine);
         };
 
-        for (var i = APP.mapData.rows - 1; i >= 0; i--) {
+        for (var i = APP.mapData.rows; i > 0; i--) {
             tempLine = new PIXI.Graphics();
-            tempLine.lineStyle(0.5,0);
-            tempLine.moveTo(0,0);
-            tempLine.lineTo(windowWidth , 0);
+            tempLine.lineStyle(1,0);
+            tempLine.moveTo(APP.mapBounds.x,0);
+            tempLine.lineTo(APP.mapBounds.x + APP.mapBounds.width , 0);
             tempLine.position.y = i * windowHeight / APP.mapData.rows;
-            tempLine.alpha = 0.5;
-            this.addChild(tempLine);
+            // tempLine.alpha = 0.5;
+            // this.addChild(tempLine);
+            this.gameGrid.addChild(tempLine);
         };
 
     },
@@ -54,18 +77,19 @@ var GameScreen = AbstractScreen.extend({
         this.hideTopHUD();
         this.pauseModal.show();
     },
-    hidePauseModal:function(){
-        this.showTopHUD();
-        this.pauseModal.hide(true);
-        this.unpause();
+    hidePauseModal:function(self){
+        self.showTopHUD();
+        self.pauseModal.hide(true);
+        self.unpause();
     },
     showEndModal:function(){
         this.hideTopHUD();
         this.endModal.show();
     },
-    hideEndModal:function(){
-        this.showTopHUD();
-        this.reset();
+    hideEndModal:function(self){
+        // console.log(this);
+        self.showTopHUD();
+        self.reset();
     },
     showStartModal:function(){
         this.pauseModal.hide(true);
@@ -73,10 +97,10 @@ var GameScreen = AbstractScreen.extend({
         this.hideTopHUD();
         this.startModal.show();
     },
-    hideStartModal:function(){
-        console.log("HIDE HERE");
-        this.showTopHUD();
-        this.start();
+    hideStartModal:function(self){
+        // console.log("HIDE HERE");
+        self.showTopHUD();
+        self.start();
     },
     createModal:function(){
     },
@@ -84,31 +108,29 @@ var GameScreen = AbstractScreen.extend({
     },
     onAssetsLoaded:function()
     {
-        console.log("ASSETS LOAD");
+        // console.log("ASSETS LOAD");
         this._super();
         this.layerManager = new LayerManager();
         this.environmentLayer = new Layer("Environment");
         this.entityLayer = new Layer("Entity");
-        this.fireLayer = new Layer("Fire");
-        this.enemyLayer = new Layer("Enemy");
+        // this.fireLayer = new Layer("Fire");
+        // this.enemyLayer = new Layer("Enemy");
         this.layerManager.addLayer(this.environmentLayer);
-        this.layerManager.addLayer(this.enemyLayer);
+        // this.layerManager.addLayer(this.enemyLayer);
         this.layerManager.addLayer(this.entityLayer);
-        this.layerManager.addLayer(this.fireLayer);
+        // this.layerManager.addLayer(this.fireLayer);
 
         this.verticalSpeed = APP.gameVariables.verticalSpeed;
 
         configEnvironment = {
             leftWallScale:windowWidth / APP.mapData.cols / windowWidth,
             rightWallScale:windowWidth / APP.mapData.cols / windowWidth,
-            floorScale:0.8,
+            floorScale:1,
         }
         // console.log(configEnvironment);
-        configEnvironment.floorScale = 1 - configEnvironment.leftWallScale - configEnvironment.rightWallScale;
+        configEnvironment.floorScale = 1;// - configEnvironment.leftWallScale - configEnvironment.rightWallScale;
 
-        this.environment = new Environment(configEnvironment);
-        this.environmentLayer.addChild(this.environment);
-        this.environment.velocity.y = this.verticalSpeed;
+        
 
         var self = this;
 
@@ -126,19 +148,11 @@ var GameScreen = AbstractScreen.extend({
             this.players.push(tempPlayer) ;
         };
 
-        this.gameHit = new PIXI.Graphics();
-        this.gameHit.interactive = true;
-        this.gameHit.beginFill(0xFF0000);
-        this.gameHit.drawRect(0,0,windowWidth, windowHeight);
-        this.gameContainer.addChild(this.gameHit);
-        // this.gameHit.alpha = 0.1;
-        this.gameHit.hitArea = new PIXI.Rectangle(0, 0, windowWidth, windowHeight);
-
         this.selecteds = [];
 
         this.updateable = false;
 
-        this.addChild(this.layerManager);
+        this.gameContainer.addChild(this.layerManager.getContent());
 
         this.HUDLayer = new PIXI.DisplayObjectContainer();
         this.addChild(this.HUDLayer);
@@ -147,22 +161,25 @@ var GameScreen = AbstractScreen.extend({
 
 
         this.label = new PIXI.Text("", {font:"20px Arial", fill:"red"});
-        // this.addChild(this.label);
-
-        // this.label2 = new PIXI.Text("", {font:"20px Arial", fill:"red"});
-        // this.addChild(this.label2);
-        // this.label2.position.y = 200;
-
-
-
-
-        this.drawMapData();
-
         this.laneCounter = 0;
 
         this.initHUD();
         
         this.reset();
+        tempLine = new PIXI.Graphics();
+        tempLine.lineStyle(3,0xFF0000);
+        tempLine.drawRect(APP.mapBounds.x,APP.mapBounds.y,APP.mapBounds.width,APP.mapBounds.height);
+        this.gameGrid.addChild(tempLine);
+
+        this.environment = new Environment(APP.mapBounds);
+        this.environmentLayer.addChild(this.environment);
+        this.environment.velocity.y = this.verticalSpeed;
+        this.drawMapData();
+    },
+    restart:function(self){
+        console.log("RESTART");
+        self.destroyEntities();
+        self.reset();
     },
     initHUD:function(){
         var self = this;
@@ -179,7 +196,7 @@ var GameScreen = AbstractScreen.extend({
         returnButton.build(this.gameController.getTileSize().width, this.gameController.getTileSize().width);
         returnButton.addLabel(returnButtonLabel,0,0,true,0,0);
         this.tupHUD.addChild(returnButton.getContent());
-        returnButton.getContent().position = this.gameController.getTilePosition(1,0);
+        returnButton.getContent().position = this.gameController.getTilePositionHUD(1,0);
         returnButton.getContent().position.y = this.gameController.getTileSize().height / 2 - returnButton.getContent().height / 2;
 
         returnButton.clickCallback = function(){
@@ -191,7 +208,7 @@ var GameScreen = AbstractScreen.extend({
         pauseButton.build(this.gameController.getTileSize().width, this.gameController.getTileSize().width);
         pauseButton.addLabel(pauseButtonLabel,0,0,true,0,0);
         this.tupHUD.addChild(pauseButton.getContent());
-        pauseButton.getContent().position = this.gameController.getTilePosition(7,0);
+        pauseButton.getContent().position = this.gameController.getTilePositionHUD(7,0);
         pauseButton.getContent().position.y = this.gameController.getTileSize().height / 2 - pauseButton.getContent().height / 2;
         pauseButton.clickCallback = function(){
             self.showPauseModal();
@@ -203,15 +220,15 @@ var GameScreen = AbstractScreen.extend({
 
         this.HUDLayer.addChild(this.tupHUD);
 
-        this.pauseModal = new PauseModal(this);
+        this.pauseModal = new PauseModal(this, this.hidePauseModal, this.restart);
         this.pauseModal.build();
         this.HUDLayer.addChild(this.pauseModal.getContent());
 
-        this.endModal = new EndModal(this);
+        this.endModal = new EndModal(this,this.hideEndModal);
         this.endModal.build();
         this.HUDLayer.addChild(this.endModal.getContent());
 
-        this.startModal = new StartModal(this);
+        this.startModal = new StartModal(this, this.hideStartModal);
         this.startModal.build();
         this.HUDLayer.addChild(this.startModal.getContent());
 
@@ -243,7 +260,8 @@ var GameScreen = AbstractScreen.extend({
 
         tempEnemies = this.gameController.getInitScreenEntities();
         for (var i = tempEnemies.length - 1; i >= 0; i--) {
-            this.enemyLayer.addChild(tempEnemies[i]);
+            this.entityLayer.addChild(tempEnemies[i]);
+            // this.enemyLayer.addChild(tempEnemies[i]);
         };
 
         this.showStartModal();
@@ -256,22 +274,20 @@ var GameScreen = AbstractScreen.extend({
         this.showTopHUD();
     },
     destroyEntities:function(){
-        for (var i = this.enemyLayer.childs.length - 1; i >= 0; i--) {
-            // this.enemyLayer.childs[i].preKill();
-            this.enemyLayer.childs[i].kill = true;
-            this.enemyLayer.removeChild(this.enemyLayer.childs[i]);
+        for (var i = this.entityLayer.childs.length - 1; i >= 0; i--) {
+            // this.entityLayer.childs[i].preKill();
+            if(this.entityLayer.childs[i].type == "enemy"){
+                this.entityLayer.childs[i].kill = true;
+                this.entityLayer.removeChild(this.entityLayer.childs[i]);
+            }
         };
-        for (var i = this.fireLayer.childs.length - 1; i >= 0; i--) {
-            // this.fireLayer.childs[i].preKill();
-            this.fireLayer.childs[i].kill = true;
-            this.fireLayer.removeChild(this.fireLayer.childs[i]);
-        };
+        // for (var i = this.fireLayer.childs.length - 1; i >= 0; i--) {
+        //     // this.fireLayer.childs[i].preKill();
+        //     this.fireLayer.childs[i].kill = true;
+        //     this.fireLayer.removeChild(this.fireLayer.childs[i]);
+        // };
     },
-    restart:function(){
-        console.log("RESTART");
-        this.destroyEntities();
-        this.reset();
-    },
+
     gameOver:function()
     {
         this.destroyEntities();
@@ -366,7 +382,7 @@ var GameScreen = AbstractScreen.extend({
             this.tileCounter = Math.floor(this.laneCounter / this.gameController.getTileSize().height);
 
 
-            this.gameController.update(this.tileCounter, this.enemyLayer);
+            this.gameController.update(this.tileCounter, this.entityLayer);
 
             // if(this.tileCounter > this.lastTileCounter)
                 // this.updateEnemySpawner();
@@ -382,12 +398,12 @@ var GameScreen = AbstractScreen.extend({
             tempPlayer = this.players[i];
             hasCollision = false;
             targetPosition = {x:tempPlayer.getPosition().x, y:tempPlayer.getPosition().y};
-            if(targetPosition.x - tempPlayer.range < (this.environment.model.leftWallScale * windowWidth)){
+            if(targetPosition.x - tempPlayer.range < APP.mapBounds.x){
                 hasCollision = true;
-                targetPosition.x = this.environment.model.leftWallScale * windowWidth + tempPlayer.range;
-            }else if(targetPosition.x + tempPlayer.range > ((1 - this.environment.model.rightWallScale) * windowWidth)){
+                targetPosition.x = APP.mapBounds.x + tempPlayer.range;
+            }else if(targetPosition.x + tempPlayer.range > APP.mapBounds.width + APP.mapBounds.x){
                 hasCollision = true;
-                targetPosition.x = ((1 - this.environment.model.rightWallScale) * windowWidth) - tempPlayer.range
+                targetPosition.x = APP.mapBounds.width - tempPlayer.range + APP.mapBounds.x;
             }
             if(hasCollision){
                 tempPlayer.goTo(targetPosition, true);
@@ -395,7 +411,7 @@ var GameScreen = AbstractScreen.extend({
         }
         for (var i = this.players.length - 1; i >= 0; i--) {
             this.entityLayer.collideChilds(this.players[i])
-            this.enemyLayer.collideChilds(this.players[i]);
+            // this.enemyLayer.collideChilds(this.players[i]);
         };
         // this.entityLayer.collideChilds(this.player1);
         // this.enemyLayer.collideChilds(this.player2);

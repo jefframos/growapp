@@ -1,33 +1,32 @@
 var Environment = Class.extend({
-	init:function(config){
+	init:function(mapBounds){
 		this.environmentContainer = new PIXI.DisplayObjectContainer();
 		this.assetsList = [];
 		this.velocity = {x:0,y:0};
 		this.updateable = true;
 		// console.log(this);
-
+		this.mapBounds = mapBounds;
 		this.wallsScale = 0.1;
-
-		this.model = config;
 		
 
-		this.floor = new EnvironmentObject("img/assets/Floor.png", {x:this.model.floorScale});
+		this.floor = new EnvironmentObject("img/assets/Floor.png", {x:this.mapBounds.width});
 		this.getContent().addChild(this.floor.getContent());
-
+		this.floor.getContent().position.x = this.mapBounds.x;
 		// scaleConverter(this.floor.getContent().width, windowWidth, 1 - this.wallsScale * 2, this.floor.getContent());
 		// this.floor = new SimpleSprite("img/assets/Floor.png");
 		// this.getContent().addChild(this.floor.getContent());
 
-		this.leftWall = new EnvironmentObject("img/assets/SideWall.png", {x:this.model.leftWallScale});
+		this.leftWall = new EnvironmentObject("img/assets/SideWall.png", {x:APP.getGameController().getTileSize().width * 2}, {y:APP.getGameController().getTileSize().width});
 		this.getContent().addChild(this.leftWall.getContent());
+		this.leftWall.getContent().position.x = - this.leftWall.getContent().width / 2;
 
-		this.rightWall = new EnvironmentObject("img/assets/SideWall.png", {x:this.model.rightWallScale});
+		this.rightWall = new EnvironmentObject("img/assets/SideWall2.png", {x:APP.getGameController().getTileSize().width * 2}, {y:APP.getGameController().getTileSize().width});
 		this.getContent().addChild(this.rightWall.getContent());
 		
-		this.rightWall.getContent().position.x = windowWidth;
-		this.rightWall.getContent().scale.x *= -1;
+		// this.rightWall.getContent().scale.x *= -1;
+		this.rightWall.getContent().position.x = this.mapBounds.width + this.rightWall.getContent().width / 2;
 
-		this.floor.getContent().position.x = this.leftWall.getContent().width;
+		//-this.leftWall.getContent().width;
 
 		this.assetsList.push(this.floor);
 		this.assetsList.push(this.rightWall);

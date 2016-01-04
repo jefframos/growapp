@@ -1,8 +1,9 @@
 /*jshint undef:false */
 var Fire = Entity.extend({
-    init:function(vel, range, color){
+    init:function(vel, range, color, entityLayer, power){
         // console.log(vel);
         this._super( true );
+        this.entityLayer = entityLayer;
         this.color = color;
         this.updateable = false;
         this.deading = false;
@@ -14,7 +15,7 @@ var Fire = Entity.extend({
         this.velocity.x = vel.x;
         this.velocity.y = vel.y;
         this.timeLive = 800;
-        this.power = 1;
+        this.power = power;
         this.defaultVelocity = 1;
         this.entityContainer = new PIXI.DisplayObjectContainer();
         this.hitContainer = new PIXI.DisplayObjectContainer();
@@ -43,6 +44,7 @@ var Fire = Entity.extend({
     update: function(){
         this._super();
         this.timeLive --;
+        this.entityLayer.collideChilds(this);
         if(this.timeLive <= 0){
             this.preKill();
         }
@@ -51,7 +53,7 @@ var Fire = Entity.extend({
         // console.log('fireCollide', arrayCollide[0].type);
         if(this.collidable){
             if(arrayCollide[0].type === 'enemy'){
-                this.getContent().tint = 0xff0000;
+                // this.getContent().tint = 0xff0000;
                 this.preKill();
                 arrayCollide[0].hurt(this.power);
 

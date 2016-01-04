@@ -3,8 +3,12 @@ var GameController = Class.extend({
     init:function(){
     	APP.mapData = {
             cols: 9,
-            rows: 12
+            rows: 12,
+            mapCols: 11
         }
+
+        // cols: 9,
+        //     rows: 12
 
         APP.gameVariables = {
             verticalSpeed: windowHeight * 0.002,
@@ -15,70 +19,72 @@ var GameController = Class.extend({
             growFactor: windowWidth * 0.0001,
             shootSpeedStandard: windowHeight * 0.01,
         }
+
+        APP.mapBounds = new PIXI.Rectangle(this.getTileSize().width, 0, APP.mapData.mapCols * this.getTileSize().width, windowHeight);
         this.buildMap();
     },
     buildMap:function(){
     	map = 
         
-        "009000050\n"+
-        "000000060\n"+
-        "000060050\n"+
-        "000000050\n"+
-        "000000000\n"+
-        "060000000\n"+
-        "000000700\n"+
-        "000000000\n"+
-        "000000000\n"+
-        "000000000\n"+
-        "008000060\n"+
-        "000000000\n"+
-        "008000000\n"+
-        "000000000\n"+
-        "000000000\n"+
-        "000000000\n"+
-        "000000000\n"+
-        "000000000\n"+
-        "050000000\n"+
-        "000000000\n"+
-        "000000000\n"+
-        "000000000\n"+
-        "000000000\n"+
-        "000000000\n"+
-        "000000000\n"+
-        "000000000\n"+
-        "060000000\n"+
-        "000000000\n"+
-        "000000000\n"+
-        "000000000\n"+
-        "000000000\n"+
-        "000000000\n"+
-        "000000000\n"+
-        // "000000000\n"+
-        // "000000000\n"+
-        // "000000000\n"+
-        // "000000000\n"+
-        // "000000000\n"+
-        // "000000000\n"+
-        // "000000000\n"+
-        // "000000000\n"+
-        // "000000000\n"+
-        // "000000000\n"+
-        // "000000000\n"+
-        // "000000000\n"+
-        // "000000000\n"+
-        // "000000000\n"+
-        // "000000000\n"+
-        // "000000000\n"+
-        // "000000000\n"+
-        // "000000000\n"+
-        // "000000000\n"+
-        // "000000000\n"+
-        "000000000\n"+
-        "000000000\n"+
-        "000000000\n"+
-        "000000000\n"+
-        "000102000\n"+
-        "000000000"
+        "00900005000\n"+
+        "00000006000\n"+
+        "00006005000\n"+
+        "00000005000\n"+
+        "00000000000\n"+
+        "06000000000\n"+
+        "00000070000\n"+
+        "00000000000\n"+
+        "00000000000\n"+
+        "00000000000\n"+
+        "00800006000\n"+
+        "00000000000\n"+
+        "00800000000\n"+
+        "00000000000\n"+
+        "00000000000\n"+
+        "00000000000\n"+
+        "00000000000\n"+
+        "00000000000\n"+
+        "05000000000\n"+
+        "00000000000\n"+
+        "00000000000\n"+
+        "00000600000\n"+
+        "60000000700\n"+
+        "00000000000\n"+
+        "00800000000\n"+
+        "00000000000\n"+
+        "06080000000\n"+
+        "00080000000\n"+
+        "00000000000\n"+
+        "00000000000\n"+
+        "00000000000\n"+
+        "00000000000\n"+
+        "00000000000\n"+
+        // "00000000000\n"+
+        // "00000000000\n"+
+        // "00000000000\n"+
+        // "00000000000\n"+
+        // "00000000000\n"+
+        // "00000000000\n"+
+        // "00000000000\n"+
+        // "00000000000\n"+
+        // "00000000000\n"+
+        // "00000000000\n"+
+        // "00000000000\n"+
+        // "00000000000\n"+
+        // "00000000000\n"+
+        // "00000000000\n"+
+        // "00000000000\n"+
+        // "00000000000\n"+
+        // "00000000000\n"+
+        // "00000000000\n"+
+        // "00000000000\n"+
+        // "00000000000\n"+
+        "00000000000\n"+
+        "00000000000\n"+
+        "00010002000\n"+
+        "00000000000\n"+
+        "00000000000\n"+
+        "00000000000"
         
 
         this.mapArray = [];
@@ -132,7 +138,7 @@ var GameController = Class.extend({
     	tempEntity = null;
     	id = (this.entityList.length - APP.mapData.rows - id - 1);
     	if(id < 0){
-    		console.log("ACABOU O LEVEL");
+    		// console.log("ACABOU O LEVEL");
     		return;
     	}
     	for (var i = this.entityList[id].length - 1; i >= 0; i--) {
@@ -140,7 +146,7 @@ var GameController = Class.extend({
 			if(tempEntity){
 				entities.push(
 					this.getEnemy(tempEntity.i,
-    					-1,
+    					-5,
     					tempEntity.type));
 			}
     	}
@@ -184,7 +190,7 @@ var GameController = Class.extend({
         if(type == 6){
             tempLabel = "ENEMY";
         }
-        console.log(tempLabel);
+        // console.log(tempLabel);
 		tempEnemy = new Enemy(tempLabel, {width:tempSize});
 		tempEnemy.velocity.y = APP.gameVariables.verticalSpeed;
         tempEnemy.build();
@@ -205,6 +211,7 @@ var GameController = Class.extend({
         if(type == 9){
         	tempEnemy.behaviours.push(this.getRandomBehaviour(0));
         }
+        tempEnemy.getContent().position.y += 1/10; 
         return tempEnemy
 
     },
@@ -223,7 +230,7 @@ var GameController = Class.extend({
     	}
         return this.gameTileSize;
     },
-    getTilePosition:function(i,j, center){
+    getTilePositionHUD:function(i,j, center){
         if(i > APP.mapData.cols){
             i = APP.mapData.cols;
         }
@@ -236,6 +243,24 @@ var GameController = Class.extend({
         }
         if(center){
             returnObj.x += (windowWidth / APP.mapData.cols)/2;
+            returnObj.y += (windowHeight / APP.mapData.rows)/2;
+        }
+
+        return returnObj;
+    },
+    getTilePosition:function(i,j, center){
+        if(i > APP.mapData.cols){
+            i = APP.mapData.cols;
+        }
+        if(j > APP.mapData.rows){
+            j = APP.mapData.rows;
+        }
+        var returnObj = {
+            x:i * (APP.mapBounds.width / APP.mapData.mapCols) + APP.mapBounds.x,
+            y:j * (windowHeight / APP.mapData.rows),
+        }
+        if(center){
+            returnObj.x += (APP.mapBounds.width / APP.mapData.mapCols)/2;
             returnObj.y += (windowHeight / APP.mapData.rows)/2;
         }
 
@@ -254,10 +279,38 @@ var GameController = Class.extend({
 	    		enemyLayer.addChild(arrayEnemies[i]);
 	    	};
 	    }
+        enemyLayer.getContent().children.sort(this.depthCompare);
     	if(this.mapArray.length >= rowID){
     		return;
     	}
 
     	// console.log(this.mapArray[rowID]);
-    }
+    },
+    depthCompare:function(a,b) {
+        // if(a.type === 'environment' && b.type === 'environment'){
+        //     return 0;
+        // }
+
+        var yA = a.position.y;
+        var yB = b.position.y;
+        if(yA === yB){
+            return 0;
+        }
+        if(a.noDepth || b.noDepth){
+            // return 0;
+        }
+        if(a.children.length > 0){
+            // yA = a.children[0].position.y ;//+ a.children[0].height;
+        }
+        if(b.children.length > 0){
+            // yB = b.children[0].position.y ;//+ b.children[0].height;
+        }
+        if (yA < yB){
+            return -1;
+        }
+        if (yA > yB){
+            return 1;
+        }
+        return 0;
+    },
 });
