@@ -32,7 +32,7 @@ var GameScreen = AbstractScreen.extend({
        
     },    
     applyIsometric:function(){
-        this.gameContainer.pivot = {x:windowWidth/2, y:windowHeight/2};
+        this.gameContainer.pivot = {x:(APP.mapBounds.x + APP.mapBounds.width)/2, y:windowHeight/2};
         this.gameContainer.rotation = APP.gameRotation;
 
         this.gameGrid.pivot = {x:windowWidth/2, y:windowHeight/2};
