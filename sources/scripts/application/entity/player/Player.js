@@ -60,7 +60,7 @@ var Player = Class.extend({
         this.playerContainer.addChild(this.playerImage.getContent());
         this.playerImage.getContent().tint = this.color;
 
-        this.playerImage.getContent().rotation = -45 / 180 * 3.14;
+        this.playerImage.getContent().rotation = -APP.gameRotation;
         // console.log(this.playerImage.getContent())
         this.playerImage.getContent().scale.x = 1;
         this.playerImage.getContent().scale.y = 2;

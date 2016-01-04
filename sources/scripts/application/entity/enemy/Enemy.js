@@ -36,7 +36,7 @@ var Enemy = Entity.extend({
 
         this.behaviours = [];
 
-        this.playerContainer.rotation = -45 / 180 * 3.14
+        this.playerContainer.rotation = -APP.gameRotation;
         this.playerImage.getContent().scale.x = 1;
         this.playerImage.getContent().scale.y = 2;
 

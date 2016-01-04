@@ -264,6 +264,16 @@ var GameController = Class.extend({
             mapCols: 11
         }
 
+        if(window.location.hash) {
+            APP.rotation = window.location.hash.substr(1);
+          // Fragment exists
+        } else {
+          // Fragment doesn't exist
+            APP.rotation = 30;
+        }
+        console.log(APP.rotation);
+        APP.gameRotation = APP.rotation / 180 * 3.14;
+        APP.isometricScale = 0.5;
         // cols: 9,
         //     rows: 12
 
@@ -1666,13 +1676,13 @@ var GameScreen = AbstractScreen.extend({
     },    
     applyIsometric:function(){
         this.gameContainer.pivot = {x:windowWidth/2, y:windowHeight/2};
-        this.gameContainer.rotation = 45 /180*3.14;
+        this.gameContainer.rotation = APP.gameRotation;
 
         this.gameGrid.pivot = {x:windowWidth/2, y:windowHeight/2};
-        this.gameGrid.rotation = 45 /180*3.14;
+        this.gameGrid.rotation = APP.gameRotation;
 
 
-        this.gameContainerMaster.scale.y = 0.5;
+        this.gameContainerMaster.scale.y = APP.isometricScale;
         this.gameContainerMaster.x = windowWidth/2
         this.gameContainerMaster.y = windowHeight/2
     },
@@ -2574,7 +2584,7 @@ var Enemy = Entity.extend({
 
         this.behaviours = [];
 
-        this.playerContainer.rotation = -45 / 180 * 3.14
+        this.playerContainer.rotation = -APP.gameRotation;
         this.playerImage.getContent().scale.x = 1;
         this.playerImage.getContent().scale.y = 2;
 
@@ -2902,7 +2912,7 @@ var Player = Class.extend({
         this.playerContainer.addChild(this.playerImage.getContent());
         this.playerImage.getContent().tint = this.color;
 
-        this.playerImage.getContent().rotation = -45 / 180 * 3.14;
+        this.playerImage.getContent().rotation = -APP.gameRotation;
         // console.log(this.playerImage.getContent())
         this.playerImage.getContent().scale.x = 1;
         this.playerImage.getContent().scale.y = 2;
@@ -3218,7 +3228,9 @@ var EnvironmentObject = Class.extend({
 
 		this.assetList = [];
 
-		var totAssets = Math.ceil((windowHeight * 1.5) / this.img.getContent().height) + 1;
+		this.startY = windowHeight * APP.gameRotation;
+
+		var totAssets = Math.ceil((windowHeight * 2) / this.img.getContent().height) + 3;
 		for (var i = 0; i < totAssets; i++) {
 			this.img = new SimpleSprite(imgSrc);
 			this.environmentContainer.addChild(this.img.getContent());
@@ -3229,7 +3241,7 @@ var EnvironmentObject = Class.extend({
 				this.img.getContent().height = mainScale.y;
 				// scaleConverter(this.img.getContent().height, windowHeight, mainScale.y, this.img.getContent());
 			}
-			this.img.getContent().position.y = (this.img.getContent().height - this.correctionPosition.y) * i - this.img.getContent().height ;
+			this.img.getContent().position.y = (this.img.getContent().height - this.correctionPosition.y) * i - this.img.getContent().height  - this.startY;
 
 			this.assetList.push(this.img);
 		};
@@ -3243,12 +3255,12 @@ var EnvironmentObject = Class.extend({
 			this.assetList[i].getContent().position.x += this.velocity.x;
 			this.assetList[i].getContent().position.y += this.velocity.y;
 			if(this.velocity.y > 0){
-				if(this.assetList[i].getContent().position.y + this.velocity.y > windowHeight * 1.5){					
-					this.assetList[i].getContent().position.y = this.getMinPosition() -this.assetList[i].getContent().height + this.velocity.y + this.correctionPosition.y;
+				if(this.assetList[i].getContent().position.y + this.velocity.y > windowHeight * 2){					
+					this.assetList[i].getContent().position.y = this.getMinPosition() -this.assetList[i].getContent().height + this.velocity.y + this.correctionPosition.y;//  - this.startY;
 				}
 			}else if(this.velocity.y < 0){
 				if(this.assetList[i].getContent().position.y + this.velocity.y + this.assetList[i].getContent().height < 0){
-					this.assetList[i].getContent().position.y = this.getMaxPosition() + this.assetList[i].getContent().height + this.velocity.y + this.correctionPosition.y;
+					this.assetList[i].getContent().position.y = this.getMaxPosition() + this.assetList[i].getContent().height + this.velocity.y + this.correctionPosition.y;//  - this.startY;
 				}
 			}
 		};

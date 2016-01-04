@@ -17,7 +17,9 @@ var EnvironmentObject = Class.extend({
 
 		this.assetList = [];
 
-		var totAssets = Math.ceil((windowHeight * 1.5) / this.img.getContent().height) + 1;
+		this.startY = windowHeight * APP.gameRotation;
+
+		var totAssets = Math.ceil((windowHeight * 2) / this.img.getContent().height) + 3;
 		for (var i = 0; i < totAssets; i++) {
 			this.img = new SimpleSprite(imgSrc);
 			this.environmentContainer.addChild(this.img.getContent());
@@ -28,7 +30,7 @@ var EnvironmentObject = Class.extend({
 				this.img.getContent().height = mainScale.y;
 				// scaleConverter(this.img.getContent().height, windowHeight, mainScale.y, this.img.getContent());
 			}
-			this.img.getContent().position.y = (this.img.getContent().height - this.correctionPosition.y) * i - this.img.getContent().height ;
+			this.img.getContent().position.y = (this.img.getContent().height - this.correctionPosition.y) * i - this.img.getContent().height  - this.startY;
 
 			this.assetList.push(this.img);
 		};
@@ -42,12 +44,12 @@ var EnvironmentObject = Class.extend({
 			this.assetList[i].getContent().position.x += this.velocity.x;
 			this.assetList[i].getContent().position.y += this.velocity.y;
 			if(this.velocity.y > 0){
-				if(this.assetList[i].getContent().position.y + this.velocity.y > windowHeight * 1.5){					
-					this.assetList[i].getContent().position.y = this.getMinPosition() -this.assetList[i].getContent().height + this.velocity.y + this.correctionPosition.y;
+				if(this.assetList[i].getContent().position.y + this.velocity.y > windowHeight * 2){					
+					this.assetList[i].getContent().position.y = this.getMinPosition() -this.assetList[i].getContent().height + this.velocity.y + this.correctionPosition.y;//  - this.startY;
 				}
 			}else if(this.velocity.y < 0){
 				if(this.assetList[i].getContent().position.y + this.velocity.y + this.assetList[i].getContent().height < 0){
-					this.assetList[i].getContent().position.y = this.getMaxPosition() + this.assetList[i].getContent().height + this.velocity.y + this.correctionPosition.y;
+					this.assetList[i].getContent().position.y = this.getMaxPosition() + this.assetList[i].getContent().height + this.velocity.y + this.correctionPosition.y;//  - this.startY;
 				}
 			}
 		};

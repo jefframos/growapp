@@ -7,6 +7,16 @@ var GameController = Class.extend({
             mapCols: 11
         }
 
+        if(window.location.hash) {
+            APP.rotation = window.location.hash.substr(1);
+          // Fragment exists
+        } else {
+          // Fragment doesn't exist
+            APP.rotation = 30;
+        }
+        console.log(APP.rotation);
+        APP.gameRotation = APP.rotation / 180 * 3.14;
+        APP.isometricScale = 0.5;
         // cols: 9,
         //     rows: 12
 
