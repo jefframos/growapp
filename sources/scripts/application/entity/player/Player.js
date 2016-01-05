@@ -17,24 +17,25 @@ var Player = Class.extend({
         this.startPosition = null;
         this.parentClass = parent;
         this.fireLayer = fireLayer;
-
+        this.imgURL = "img/assets/teste1.png";
         if(label == "PLAYER0"){
             this.standardVelocity = {x:8,y:8};
             this.virtualVelocity = {x:0,y:0};
             this.force = {x:3,y:3};
             this.velocity = {x:0,y:0};
             this.shootMaxAcum = 10;
-            this.color = 0x0000FF;
+            this.color = 0x43A2A8;
             this.fireRange = this.standardRange * 0.3;
             this.firePower = 1;
             this.fireSpeed = - APP.gameVariables.shootSpeedStandard * 1.3;
+            this.imgURL = "img/assets/teste2.png";
         }else{
             this.standardVelocity = {x:8,y:8};
             this.virtualVelocity = {x:0,y:0};
             this.force = {x:2,y:2};
             this.velocity = {x:0,y:0};
             this.shootMaxAcum = 30;
-            this.color = 0xFF0000;
+            this.color = 0xD97A74;
             this.fireRange = this.standardRange * 0.6;
             this.firePower = 3;
             this.fireSpeed = - APP.gameVariables.shootSpeedStandard;
@@ -56,9 +57,9 @@ var Player = Class.extend({
 		this.hitPolygon(this.color,true);
 		this.debugPolygon(Math.random() * 0xFFFFFF,true);
 
-		this.playerImage = new SimpleSprite("img/assets/teste1.png", {x:0.5, y:0.8});
+		this.playerImage = new SimpleSprite(this.imgURL, {x:0.5, y:0.8});
         this.playerContainer.addChild(this.playerImage.getContent());
-        this.playerImage.getContent().tint = this.color;
+        // this.playerImage.getContent().tint = this.color;
 
         this.playerImage.getContent().rotation = -APP.gameRotation;
         // console.log(this.playerImage.getContent())

@@ -17,20 +17,21 @@ var Environment = Class.extend({
 		// this.getContent().addChild(this.floor.getContent());
 
 		this.leftWall = new EnvironmentObject("img/assets/SideWall.png", {x:APP.getGameController().getTileSize().width * 2}, {y:APP.getGameController().getTileSize().width});
-		this.getContent().addChild(this.leftWall.getContent());
-		this.leftWall.getContent().position.x = - this.leftWall.getContent().width / 2;
+		// this.getContent().addChild(this.leftWall.getContent());
+		// this.leftWall.getContent().position.x = - this.leftWall.getContent().width / 2;
 
-		this.rightWall = new EnvironmentObject("img/assets/SideWall2.png", {x:APP.getGameController().getTileSize().width * 2}, {y:APP.getGameController().getTileSize().width});
+		this.rightWall = new EnvironmentObject("img/assets/SideWall2.png", {x:APP.getGameController().getTileSize().width * 4}, {y:APP.getGameController().getTileSize().width*2});
 		this.getContent().addChild(this.rightWall.getContent());
 		
 		// this.rightWall.getContent().scale.x *= -1;
-		this.rightWall.getContent().position.x = this.mapBounds.width + this.rightWall.getContent().width / 2;
+		// this.rightWall.getContent().position.x = this.mapBounds.width + this.rightWall.getContent().width / 2;
+		this.rightWall.getContent().position.x = this.mapBounds.width //* 0.95;// + this.rightWall.getContent().width / 2;
 
 		//-this.leftWall.getContent().width;
 
 		this.assetsList.push(this.floor);
 		this.assetsList.push(this.rightWall);
-		this.assetsList.push(this.leftWall);
+		// this.assetsList.push(this.leftWall);
 	},
 	update:function(){
 		// console.log(this.assetsList.length);

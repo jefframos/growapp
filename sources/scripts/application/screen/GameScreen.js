@@ -11,6 +11,11 @@ var GameScreen = AbstractScreen.extend({
         this._super();
         this.updateable = false;
 
+        this.bg = new SimpleSprite("img/assets/bg.png");
+        this.addChild(this.bg.getContent());
+        scaleConverter(this.bg.getContent().width, windowWidth, 1.2, this.bg.getContent());
+        this.bg.getContent().position.y = -this.bg.getContent().height * 0.16;
+        this.bg.getContent().position.x = -this.bg.getContent().width * 0.05
         this.gameContainerMaster = new PIXI.DisplayObjectContainer();
         this.addChild(this.gameContainerMaster);
 
@@ -68,9 +73,12 @@ var GameScreen = AbstractScreen.extend({
 
     },
     showTopHUD:function(){
+
+        TweenLite.to(this.scoreLabel, 0.5, {alpha:1, delay:0.5});
         TweenLite.to(this.tupHUD, 0.5, {y:0});
     },
     hideTopHUD:function(){
+        this.scoreLabel.alpha = 0;
         TweenLite.to(this.tupHUD, 0.5, {y:-this.tupHUD.height});
     },
     showPauseModal:function(){
@@ -185,10 +193,10 @@ var GameScreen = AbstractScreen.extend({
         var self = this;
 
         this.tupHUD = new PIXI.DisplayObjectContainer();
-        backTopHud = new PIXI.Graphics();
-        backTopHud.beginFill(0);
-        backTopHud.drawRect(0,0,windowWidth, this.gameController.getTileSize().height);
-        this.tupHUD.addChild(backTopHud);
+        // backTopHud = new PIXI.Graphics();
+        // backTopHud.beginFill(0);
+        // backTopHud.drawRect(0,0,windowWidth, this.gameController.getTileSize().height);
+        // this.tupHUD.addChild(backTopHud);
 
 
         returnButtonLabel = new PIXI.Text("<", {font:"40px barrocoregular", fill:"white", stroke:"#006CD9", strokeThickness: 10});
@@ -196,7 +204,7 @@ var GameScreen = AbstractScreen.extend({
         returnButton.build(this.gameController.getTileSize().width, this.gameController.getTileSize().width);
         returnButton.addLabel(returnButtonLabel,0,0,true,0,0);
         this.tupHUD.addChild(returnButton.getContent());
-        returnButton.getContent().position = this.gameController.getTilePositionHUD(1,0);
+        returnButton.getContent().position = this.gameController.getTilePositionHUD(0,0);
         returnButton.getContent().position.y = this.gameController.getTileSize().height / 2 - returnButton.getContent().height / 2;
 
         returnButton.clickCallback = function(){
@@ -208,7 +216,8 @@ var GameScreen = AbstractScreen.extend({
         pauseButton.build(this.gameController.getTileSize().width, this.gameController.getTileSize().width);
         pauseButton.addLabel(pauseButtonLabel,0,0,true,0,0);
         this.tupHUD.addChild(pauseButton.getContent());
-        pauseButton.getContent().position = this.gameController.getTilePositionHUD(7,0);
+        // pauseButton.getContent().position = this.gameController.getTilePositionHUD(7,0);
+        pauseButton.getContent().position = this.gameController.getTilePositionHUD(1,0);
         pauseButton.getContent().position.y = this.gameController.getTileSize().height / 2 - pauseButton.getContent().height / 2;
         pauseButton.clickCallback = function(){
             self.showPauseModal();
@@ -235,8 +244,10 @@ var GameScreen = AbstractScreen.extend({
     },
     updateScore:function(score){
         this.scoreLabel.setText(score);
-        this.scoreLabel.position.x = windowWidth / 2 - this.scoreLabel.width / 2;
-        this.scoreLabel.position.y = this.gameController.getTileSize().height / 2 - this.scoreLabel.height / 2;
+        this.scoreLabel.position.x = windowWidth - this.scoreLabel.width * 1.2;
+        // this.scoreLabel.position.x = windowWidth / 2 - this.scoreLabel.width / 2;
+        this.scoreLabel.position.y = windowHeight  - this.scoreLabel.height * 1.2;
+        // this.scoreLabel.position.y = this.gameController.getTileSize().height / 2 - this.scoreLabel.height / 2;
     },
     reset:function(){
 

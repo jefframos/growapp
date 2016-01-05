@@ -86,7 +86,7 @@ var Enemy = Entity.extend({
             };
         }
         // console.log(windowHeight);
-        if(this.velocity.y > 0 && this.getContent().position.y > windowHeight){
+        if(this.velocity.y > 0 && this.getContent().position.y > windowHeight * 1.5){
             this.preKill();
         }else if(this.velocity.y < 0 && this.getContent().position.y < -this.range){
             this.preKill();

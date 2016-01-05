@@ -21,6 +21,8 @@ var LoaderScreen = AbstractScreen.extend({
         "img/assets/SideWall.png",
         "img/assets/SideWall2.png",
         "img/assets/teste1.png",
+        "img/assets/teste2.png",
+        "img/assets/bg.png",
         "img/assets/HUD/HUD.json"
         ];
         if(assetsToLoader.length > 0){

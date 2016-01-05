@@ -296,14 +296,17 @@ var GameController = Class.extend({
         "00900005000\n"+
         "00000006000\n"+
         "00006005000\n"+
+        "00000000000\n"+
         "00000005000\n"+
         "00000000000\n"+
+        "00000000000\n"+
         "06000000000\n"+
+        "00000000000\n"+
         "00000070000\n"+
         "00000000000\n"+
         "00000000000\n"+
+        "00000006000\n"+
         "00000000000\n"+
-        "00800006000\n"+
         "00000000000\n"+
         "00800000000\n"+
         "00000000000\n"+
@@ -315,11 +318,18 @@ var GameController = Class.extend({
         "00000000000\n"+
         "00000000000\n"+
         "00000600000\n"+
+        "00000000000\n"+
+        "00000000000\n"+
         "60000000700\n"+
+        "00000000000\n"+
+        "00000000000\n"+
         "00000000000\n"+
         "00800000000\n"+
         "00000000000\n"+
-        "06080000000\n"+
+        "00000000000\n"+
+        "06000000000\n"+
+        "00000000000\n"+
+        "00000000000\n"+
         "00080000000\n"+
         "00000000000\n"+
         "00000000000\n"+
@@ -414,7 +424,7 @@ var GameController = Class.extend({
 			if(tempEntity){
 				entities.push(
 					this.getEnemy(tempEntity.i,
-    					-5,
+    					-7,
     					tempEntity.type));
 			}
     	}
@@ -1655,6 +1665,11 @@ var GameScreen = AbstractScreen.extend({
         this._super();
         this.updateable = false;
 
+        this.bg = new SimpleSprite("img/assets/bg.png");
+        this.addChild(this.bg.getContent());
+        scaleConverter(this.bg.getContent().width, windowWidth, 1.2, this.bg.getContent());
+        this.bg.getContent().position.y = -this.bg.getContent().height * 0.16;
+        this.bg.getContent().position.x = -this.bg.getContent().width * 0.05
         this.gameContainerMaster = new PIXI.DisplayObjectContainer();
         this.addChild(this.gameContainerMaster);
 
@@ -1712,9 +1727,12 @@ var GameScreen = AbstractScreen.extend({
 
     },
     showTopHUD:function(){
+
+        TweenLite.to(this.scoreLabel, 0.5, {alpha:1, delay:0.5});
         TweenLite.to(this.tupHUD, 0.5, {y:0});
     },
     hideTopHUD:function(){
+        this.scoreLabel.alpha = 0;
         TweenLite.to(this.tupHUD, 0.5, {y:-this.tupHUD.height});
     },
     showPauseModal:function(){
@@ -1829,10 +1847,10 @@ var GameScreen = AbstractScreen.extend({
         var self = this;
 
         this.tupHUD = new PIXI.DisplayObjectContainer();
-        backTopHud = new PIXI.Graphics();
-        backTopHud.beginFill(0);
-        backTopHud.drawRect(0,0,windowWidth, this.gameController.getTileSize().height);
-        this.tupHUD.addChild(backTopHud);
+        // backTopHud = new PIXI.Graphics();
+        // backTopHud.beginFill(0);
+        // backTopHud.drawRect(0,0,windowWidth, this.gameController.getTileSize().height);
+        // this.tupHUD.addChild(backTopHud);
 
 
         returnButtonLabel = new PIXI.Text("<", {font:"40px barrocoregular", fill:"white", stroke:"#006CD9", strokeThickness: 10});
@@ -1840,7 +1858,7 @@ var GameScreen = AbstractScreen.extend({
         returnButton.build(this.gameController.getTileSize().width, this.gameController.getTileSize().width);
         returnButton.addLabel(returnButtonLabel,0,0,true,0,0);
         this.tupHUD.addChild(returnButton.getContent());
-        returnButton.getContent().position = this.gameController.getTilePositionHUD(1,0);
+        returnButton.getContent().position = this.gameController.getTilePositionHUD(0,0);
         returnButton.getContent().position.y = this.gameController.getTileSize().height / 2 - returnButton.getContent().height / 2;
 
         returnButton.clickCallback = function(){
@@ -1852,7 +1870,8 @@ var GameScreen = AbstractScreen.extend({
         pauseButton.build(this.gameController.getTileSize().width, this.gameController.getTileSize().width);
         pauseButton.addLabel(pauseButtonLabel,0,0,true,0,0);
         this.tupHUD.addChild(pauseButton.getContent());
-        pauseButton.getContent().position = this.gameController.getTilePositionHUD(7,0);
+        // pauseButton.getContent().position = this.gameController.getTilePositionHUD(7,0);
+        pauseButton.getContent().position = this.gameController.getTilePositionHUD(1,0);
         pauseButton.getContent().position.y = this.gameController.getTileSize().height / 2 - pauseButton.getContent().height / 2;
         pauseButton.clickCallback = function(){
             self.showPauseModal();
@@ -1879,8 +1898,10 @@ var GameScreen = AbstractScreen.extend({
     },
     updateScore:function(score){
         this.scoreLabel.setText(score);
-        this.scoreLabel.position.x = windowWidth / 2 - this.scoreLabel.width / 2;
-        this.scoreLabel.position.y = this.gameController.getTileSize().height / 2 - this.scoreLabel.height / 2;
+        this.scoreLabel.position.x = windowWidth - this.scoreLabel.width * 1.2;
+        // this.scoreLabel.position.x = windowWidth / 2 - this.scoreLabel.width / 2;
+        this.scoreLabel.position.y = windowHeight  - this.scoreLabel.height * 1.2;
+        // this.scoreLabel.position.y = this.gameController.getTileSize().height / 2 - this.scoreLabel.height / 2;
     },
     reset:function(){
 
@@ -2135,6 +2156,8 @@ var LoaderScreen = AbstractScreen.extend({
         "img/assets/SideWall.png",
         "img/assets/SideWall2.png",
         "img/assets/teste1.png",
+        "img/assets/teste2.png",
+        "img/assets/bg.png",
         "img/assets/HUD/HUD.json"
         ];
         if(assetsToLoader.length > 0){
@@ -2635,7 +2658,7 @@ var Enemy = Entity.extend({
             };
         }
         // console.log(windowHeight);
-        if(this.velocity.y > 0 && this.getContent().position.y > windowHeight){
+        if(this.velocity.y > 0 && this.getContent().position.y > windowHeight * 1.5){
             this.preKill();
         }else if(this.velocity.y < 0 && this.getContent().position.y < -this.range){
             this.preKill();
@@ -2870,24 +2893,25 @@ var Player = Class.extend({
         this.startPosition = null;
         this.parentClass = parent;
         this.fireLayer = fireLayer;
-
+        this.imgURL = "img/assets/teste1.png";
         if(label == "PLAYER0"){
             this.standardVelocity = {x:8,y:8};
             this.virtualVelocity = {x:0,y:0};
             this.force = {x:3,y:3};
             this.velocity = {x:0,y:0};
             this.shootMaxAcum = 10;
-            this.color = 0x0000FF;
+            this.color = 0x43A2A8;
             this.fireRange = this.standardRange * 0.3;
             this.firePower = 1;
             this.fireSpeed = - APP.gameVariables.shootSpeedStandard * 1.3;
+            this.imgURL = "img/assets/teste2.png";
         }else{
             this.standardVelocity = {x:8,y:8};
             this.virtualVelocity = {x:0,y:0};
             this.force = {x:2,y:2};
             this.velocity = {x:0,y:0};
             this.shootMaxAcum = 30;
-            this.color = 0xFF0000;
+            this.color = 0xD97A74;
             this.fireRange = this.standardRange * 0.6;
             this.firePower = 3;
             this.fireSpeed = - APP.gameVariables.shootSpeedStandard;
@@ -2909,9 +2933,9 @@ var Player = Class.extend({
 		this.hitPolygon(this.color,true);
 		this.debugPolygon(Math.random() * 0xFFFFFF,true);
 
-		this.playerImage = new SimpleSprite("img/assets/teste1.png", {x:0.5, y:0.8});
+		this.playerImage = new SimpleSprite(this.imgURL, {x:0.5, y:0.8});
         this.playerContainer.addChild(this.playerImage.getContent());
-        this.playerImage.getContent().tint = this.color;
+        // this.playerImage.getContent().tint = this.color;
 
         this.playerImage.getContent().rotation = -APP.gameRotation;
         // console.log(this.playerImage.getContent())
@@ -3178,20 +3202,21 @@ var Environment = Class.extend({
 		// this.getContent().addChild(this.floor.getContent());
 
 		this.leftWall = new EnvironmentObject("img/assets/SideWall.png", {x:APP.getGameController().getTileSize().width * 2}, {y:APP.getGameController().getTileSize().width});
-		this.getContent().addChild(this.leftWall.getContent());
-		this.leftWall.getContent().position.x = - this.leftWall.getContent().width / 2;
+		// this.getContent().addChild(this.leftWall.getContent());
+		// this.leftWall.getContent().position.x = - this.leftWall.getContent().width / 2;
 
-		this.rightWall = new EnvironmentObject("img/assets/SideWall2.png", {x:APP.getGameController().getTileSize().width * 2}, {y:APP.getGameController().getTileSize().width});
+		this.rightWall = new EnvironmentObject("img/assets/SideWall2.png", {x:APP.getGameController().getTileSize().width * 4}, {y:APP.getGameController().getTileSize().width*2});
 		this.getContent().addChild(this.rightWall.getContent());
 		
 		// this.rightWall.getContent().scale.x *= -1;
-		this.rightWall.getContent().position.x = this.mapBounds.width + this.rightWall.getContent().width / 2;
+		// this.rightWall.getContent().position.x = this.mapBounds.width + this.rightWall.getContent().width / 2;
+		this.rightWall.getContent().position.x = this.mapBounds.width //* 0.95;// + this.rightWall.getContent().width / 2;
 
 		//-this.leftWall.getContent().width;
 
 		this.assetsList.push(this.floor);
 		this.assetsList.push(this.rightWall);
-		this.assetsList.push(this.leftWall);
+		// this.assetsList.push(this.leftWall);
 	},
 	update:function(){
 		// console.log(this.assetsList.length);
