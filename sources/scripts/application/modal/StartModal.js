@@ -10,28 +10,28 @@ var StartModal = StandardModal.extend({
 // this.container.addChild(this.modalContainer);
     	this.backModalImg = new SimpleSprite("back_modal_1.png", {x:0, y:0});    	
     	this.modalContainer.addChild(this.backModalImg.getContent());
-    	this.backModalImg.getContent().position.x = APP.getGameController().getTileSize().width;
-    	this.backModalImg.getContent().position.y = APP.getGameController().getTileSize().height * 3;
+    	this.backModalImg.getContent().position.x = APP.getGameController().getTileSizeHUD().width;
+    	this.backModalImg.getContent().position.y = APP.getGameController().getTileSizeHUD().height * 3;
     	this.backModalImg.getContent().interactive = true;
-    	this.backModalImg.getContent().width = (APP.mapData.cols - 2) * APP.getGameController().getTileSize().width
-    	this.backModalImg.getContent().height = (APP.mapData.rows - 6) * APP.getGameController().getTileSize().height
+    	this.backModalImg.getContent().width = (APP.mapData.cols - 2) * APP.getGameController().getTileSizeHUD().width
+    	this.backModalImg.getContent().height = (APP.mapData.rows - 6) * APP.getGameController().getTileSizeHUD().height
 
     	this.label = new PIXI.Text("START", {font:"40px barrocoregular", fill:"white", stroke:"#E88726", strokeThickness: 10});
     	this.modalContainer.addChild(this.label);
-    	scaleConverter(this.label.width, APP.getGameController().getTileSize().width*3, 1, this.label);
+    	scaleConverter(this.label.width, APP.getGameController().getTileSizeHUD().width*3, 1, this.label);
     	this.label.position = APP.getGameController().getTilePositionHUD(3,4);
-    	this.label.position.y += APP.getGameController().getTileSize().height / 2 - this.label.height / 2;
+    	this.label.position.y += APP.getGameController().getTileSizeHUD().height / 2 - this.label.height / 2;
 
 
 
         buttonContinue = new DefaultButton("button_up.png","button_over.png");
-        buttonContinue.build(APP.getGameController().getTileSize().width * 5, APP.getGameController().getTileSize().width);
+        buttonContinue.build(APP.getGameController().getTileSizeHUD().width * 5, APP.getGameController().getTileSizeHUD().width);
 
         buttonContinueLabel = new PIXI.Text("START", {font:"40px barrocoregular", fill:"white", stroke:"#006CD9", strokeThickness: 10});
 
         buttonContinue.addLabel(buttonContinueLabel,0,5,true,0,0)
         buttonContinue.getContent().position = APP.getGameController().getTilePositionHUD(2,APP.mapData.rows - 5);
-        buttonContinue.getContent().position.y += APP.getGameController().getTileSize().height / 2 - buttonContinue.getContent().height / 2;
+        buttonContinue.getContent().position.y += APP.getGameController().getTileSizeHUD().height / 2 - buttonContinue.getContent().height / 2;
         buttonContinue.clickCallback = function(){
             self.hide(false);
             self.hideCallback(self.mainScreen)

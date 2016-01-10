@@ -23,7 +23,7 @@ var GameScreen = AbstractScreen.extend({
         this.gameContainerMaster.addChild(this.gameContainer);
 
         this.gameGrid = new PIXI.DisplayObjectContainer();
-        // this.gameContainerMaster.addChild(this.gameGrid);
+        this.gameContainerMaster.addChild(this.gameGrid);
 
         var assetsToLoader = [];
         if(assetsToLoader.length > 0){
@@ -40,7 +40,7 @@ var GameScreen = AbstractScreen.extend({
         this.gameContainer.pivot = {x:(APP.mapBounds.x + APP.mapBounds.width)/2, y:windowHeight/2};
         this.gameContainer.rotation = APP.gameRotation;
 
-        this.gameGrid.pivot = {x:windowWidth/2, y:windowHeight/2};
+        this.gameGrid.pivot =  {x:(APP.mapBounds.x + APP.mapBounds.width)/2, y:windowHeight/2};//{x:windowWidth/2, y:windowHeight/2};
         this.gameGrid.rotation = APP.gameRotation;
 
 
@@ -54,20 +54,20 @@ var GameScreen = AbstractScreen.extend({
             tempLine.lineStyle(1,0);
             tempLine.moveTo(0,0);
             tempLine.lineTo(0, windowHeight);
-            tempLine.position.x = i * APP.mapBounds.width / APP.mapData.mapCols;
+            tempLine.position.x = i * this.gameController.getTileSize().width;//APP.mapBounds.width / APP.mapData.mapCols;
             // tempLine.alpha = 0.5;
-            // this.addChild(tempLine);
+            this.addChild(tempLine);
             this.gameGrid.addChild(tempLine);
         };
 
-        for (var i = APP.mapData.rows; i > 0; i--) {
+        for (var i = APP.mapData.mapRows; i > 0; i--) {
             tempLine = new PIXI.Graphics();
             tempLine.lineStyle(1,0);
             tempLine.moveTo(APP.mapBounds.x,0);
             tempLine.lineTo(APP.mapBounds.x + APP.mapBounds.width , 0);
-            tempLine.position.y = i * windowHeight / APP.mapData.rows;
+            tempLine.position.y = i * this.gameController.getTileSize().height//windowHeight / APP.mapData.mapRows;
             // tempLine.alpha = 0.5;
-            // this.addChild(tempLine);
+            this.addChild(tempLine);
             this.gameGrid.addChild(tempLine);
         };
 

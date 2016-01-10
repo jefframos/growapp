@@ -3,8 +3,9 @@ var GameController = Class.extend({
     init:function(){
     	APP.mapData = {
             cols: 9,
-            rows: 12,
-            mapCols: 11
+            rows: 11,
+            mapCols: 11,
+            mapRows: 14
         }
 
         if(window.location.hash) {
@@ -127,7 +128,7 @@ var GameController = Class.extend({
     	this.hasSomething = [];
     	has = false;
     	this.playersList = [];
-    	accum = APP.mapData.rows - this.mapArray.length;//APP.mapData.rows - 1;
+    	accum = APP.mapData.mapRows - this.mapArray.length;//APP.mapData.mapRows - 1;
     	tempObj = {};
     	for (var i = this.mapArray.length-1; i >= 0; i--) {
     		// console.log(i);
@@ -157,7 +158,7 @@ var GameController = Class.extend({
     updateEnemiesRow:function(id){
     	entities = [];
     	tempEntity = null;
-    	id = (this.entityList.length - APP.mapData.rows - id - 1);
+    	id = (this.entityList.length - APP.mapData.mapRows - id - 1);
     	if(id < 0){
     		// console.log("ACABOU O LEVEL");
     		return;
@@ -176,7 +177,7 @@ var GameController = Class.extend({
     getInitScreenEntities:function(){
     	entities = [];
     	tempEntity = null;
-    	for (var i = this.entityList.length - 1; i >= this.entityList.length -  APP.mapData.rows; i--) {
+    	for (var i = this.entityList.length - 1; i >= this.entityList.length -  APP.mapData.mapRows; i--) {
     		// console.log(i);
     		for (var j = this.entityList[i].length - 1; j >= 0; j--) {
     			tempEntity = this.entityList[i][j];
@@ -246,10 +247,18 @@ var GameController = Class.extend({
     },
     getTileSize:function(){
     	if(this.gameTileSize == null){
-    		this.gameTileSize = {width:(windowWidth / APP.mapData.cols),
-            height:(windowHeight / APP.mapData.rows)}
+    		this.gameTileSize = {width:(windowWidth / APP.mapData.mapCols),
+            height:(windowHeight / APP.mapData.mapRows)}
+            // height:(windowHeight / APP.mapData.rows)}
     	}
         return this.gameTileSize;
+    },
+    getTileSizeHUD:function(){
+        if(this.gameTileSizeHUD == null){
+            this.gameTileSizeHUD = {width:(windowWidth / APP.mapData.cols),
+            height:(windowHeight / APP.mapData.rows)}
+        }
+        return this.gameTileSizeHUD;
     },
     getTilePositionHUD:function(i,j, center){
         if(i > APP.mapData.cols){
@@ -273,16 +282,16 @@ var GameController = Class.extend({
         if(i > APP.mapData.cols){
             i = APP.mapData.cols;
         }
-        if(j > APP.mapData.rows){
-            j = APP.mapData.rows;
+        if(j > APP.mapData.mapRows){
+            j = APP.mapData.mapRows;
         }
         var returnObj = {
             x:i * (APP.mapBounds.width / APP.mapData.mapCols) + APP.mapBounds.x,
-            y:j * (windowHeight / APP.mapData.rows),
+            y:j * (windowHeight / APP.mapData.mapRows),
         }
         if(center){
             returnObj.x += (APP.mapBounds.width / APP.mapData.mapCols)/2;
-            returnObj.y += (windowHeight / APP.mapData.rows)/2;
+            returnObj.y += (windowHeight / APP.mapData.mapRows)/2;
         }
 
         return returnObj;
