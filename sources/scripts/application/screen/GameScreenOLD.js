@@ -1,5 +1,5 @@
 /*jshint undef:false */
-var GameScreen = AbstractScreen.extend({
+var GameScreenOLD = AbstractScreen.extend({
     init: function (label) {
         this._super(label);
         this.gameController = APP.getGameController();
@@ -34,8 +34,6 @@ var GameScreen = AbstractScreen.extend({
         }
         
         this.applyIsometric();
-
-
        
     },    
     applyIsometric:function(){
@@ -49,23 +47,6 @@ var GameScreen = AbstractScreen.extend({
         this.gameContainerMaster.scale.y = APP.isometricScale;
         this.gameContainerMaster.x = windowWidth/2
         this.gameContainerMaster.y = windowHeight/2
-
-        var self = this;
-        this.gameGrid.interactive = true;
-        this.gameGrid.alpha = 0.1
-        this.gameContainerMaster.buttonMode = true;
-
-        this.gameGrid.mousedown = this.gameGrid.touchstart = function(data)
-        {
-            currentTile = {x: Math.floor(data.getLocalPosition(self.gameGrid).x / self.gameController.getTileSize().width),
-                y: Math.floor(data.getLocalPosition(self.gameGrid).y / self.gameController.getTileSize().height)}
-            console.log(currentTile);
-            self.label.setText(currentTile.x + " - " + currentTile.y);
-        }
-        // this.gameGrid.mouseup = this.gameGrid.mouseupoutside = this.gameGrid.touchend = this.gameGrid.touchendoutside = function(data)
-        // {
-        //     console.log(this.data.getLocalPosition(self.getContent()));
-        // };
     },
     drawMapData:function(){
         for (var i = APP.mapData.mapCols; i > 0; i--) {
@@ -188,22 +169,19 @@ var GameScreen = AbstractScreen.extend({
 
 
         this.label = new PIXI.Text("", {font:"20px Arial", fill:"red"});
-        this.addChild(this.label);
-        this.label.position.y = this.gameController.getTileSize().height;
         this.laneCounter = 0;
 
         this.initHUD();
         
         this.reset();
         tempLine = new PIXI.Graphics();
-        tempLine.beginFill(0xff0000);
+        tempLine.lineStyle(3,0xFF0000);
         tempLine.drawRect(APP.mapBounds.x,APP.mapBounds.y,APP.mapBounds.width,APP.mapBounds.height);
-        tempLine.alpha = 0.1;
         this.gameGrid.addChild(tempLine);
 
         this.environment = new Environment(APP.mapBounds);
         this.environmentLayer.addChild(this.environment);
-        ////this.environment.velocity.y = this.verticalSpeed;
+        this.environment.velocity.y = this.verticalSpeed;
         this.drawMapData();
     },
     restart:function(self){
@@ -411,9 +389,9 @@ var GameScreen = AbstractScreen.extend({
 
             
 
-            // this.laneCounter += this.verticalSpeed;
+            this.laneCounter += this.verticalSpeed;
             this.tileCounter = Math.floor(this.laneCounter / this.gameController.getTileSize().height);
-            // console.log(this.tileCounter);
+
 
             this.gameController.update(this.tileCounter, this.entityLayer);
 

@@ -113,7 +113,7 @@ var LoaderScreen = AbstractScreen.extend({
         this.logoLabel.position = APP.getGameController().getTilePositionHUD(3,APP.mapData.rows - 1);
         this.logoLabel.position.y += APP.getGameController().getTileSizeHUD().height / 2 - this.logoLabel.height / 2;
 
-        // this.screenManager.change('Game');
+        this.screenManager.change('Game');
         //this.screenContainer.position.x = windowWidth - this.screenContainer.width * 1.2;
         //this.screenContainer.position.y = windowHeight - this.screenContainer.height * 1.3;
 

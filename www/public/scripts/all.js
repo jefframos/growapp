@@ -261,8 +261,8 @@ var GameController = Class.extend({
     	APP.mapData = {
             cols: 9,
             rows: 11,
-            mapCols: 11,
-            mapRows: 14
+            mapCols: 8,
+            mapRows: 12
         }
 
         if(window.location.hash) {
@@ -294,76 +294,76 @@ var GameController = Class.extend({
     buildMap:function(){
     	map = 
         
-        "00900005000\n"+
-        "00000006000\n"+
-        "00006005000\n"+
-        "00000000000\n"+
-        "00000005000\n"+
-        "00000000000\n"+
-        "00000000000\n"+
-        "06000000000\n"+
-        "00000000000\n"+
-        "00000070000\n"+
-        "00000000000\n"+
-        "00000000000\n"+
-        "00000006000\n"+
-        "00000000000\n"+
-        "00000000000\n"+
-        "00800000000\n"+
-        "00000000000\n"+
-        "00000000000\n"+
-        "00000000000\n"+
-        "00000000000\n"+
-        "00000000000\n"+
-        "05000000000\n"+
-        "00000000000\n"+
-        "00000000000\n"+
-        "00000600000\n"+
-        "00000000000\n"+
-        "00000000000\n"+
-        "60000000700\n"+
-        "00000000000\n"+
-        "00000000000\n"+
-        "00000000000\n"+
-        "00800000000\n"+
-        "00000000000\n"+
-        "00000000000\n"+
-        "06000000000\n"+
-        "00000000000\n"+
-        "00000000000\n"+
-        "00080000000\n"+
-        "00000000000\n"+
-        "00000000000\n"+
-        "00000000000\n"+
-        "00000000000\n"+
-        "00000000000\n"+
-        "00000000000\n"+
-        "00000000000\n"+
-        "00000000000\n"+
-        // "00000000000\n"+
-        // "00000000000\n"+
-        // "00000000000\n"+
-        // "00000000000\n"+
-        // "00000000000\n"+
-        // "00000000000\n"+
-        // "00000000000\n"+
-        // "00000000000\n"+
-        // "00000000000\n"+
-        // "00000000000\n"+
-        // "00000000000\n"+
-        // "00000000000\n"+
-        // "00000000000\n"+
-        // "00000000000\n"+
-        // "00000000000\n"+
-        // "00000000000\n"+
-        // "00000000000\n"+
-        // "00000000000\n"+
-        // "00000000000\n"+
-        // "00000000000\n"+
-        "00010002000\n"+
-        "00000000000\n"+
-        "00000000000\n"+
-        "00000000000"
+        "00900005\n"+
+        "00000006\n"+
+        "00006005\n"+
+        "00000000\n"+
+        "00000005\n"+
+        "00000000\n"+
+        "00000000\n"+
+        "06000000\n"+
+        "00000000\n"+
+        "00000070\n"+
+        "00000000\n"+
+        "00000000\n"+
+        "00000006\n"+
+        "00000000\n"+
+        "00000000\n"+
+        "00800000\n"+
+        "00000000\n"+
+        "00000000\n"+
+        "00000000\n"+
+        "00000000\n"+
+        "00000000\n"+
+        "05000000\n"+
+        "00000000\n"+
+        "00000000\n"+
+        "00000600\n"+
+        "00000000\n"+
+        "00000000\n"+
+        "60000000\n"+
+        "00000000\n"+
+        "00000000\n"+
+        "00000000\n"+
+        "00800000\n"+
+        "00000000\n"+
+        "00000000\n"+
+        "06000000\n"+
+        "00000000\n"+
+        "00000000\n"+
+        "00080000\n"+
+        "00000000\n"+
+        "00000000\n"+
+        "00000000\n"+
+        "00000000\n"+
+        "00000000\n"+
+        "00000000\n"+
+        "00000000\n"+
+        "00000000\n"+
+        // "00000000\n"+
+        // "00000000\n"+
+        // "00000000\n"+
+        // "00000000\n"+
+        // "00000000\n"+
+        // "00000000\n"+
+        // "00000000\n"+
+        // "00000000\n"+
+        // "00000000\n"+
+        // "00000000\n"+
+        // "00000000\n"+
+        // "00000000\n"+
+        // "00000000\n"+
+        // "00000000\n"+
+        // "00000000\n"+
+        // "00000000\n"+
+        // "00000000\n"+
+        // "00000000\n"+
+        // "00000000\n"+
+        // "00000000\n"+
+        "00100200\n"+
+        "00000000\n"+
+        "00000000\n"+
+        "00000000"
         
 
         this.mapArray = [];
@@ -471,7 +471,7 @@ var GameController = Class.extend({
         }
         // console.log(tempLabel);
 		tempEnemy = new Enemy(tempLabel, {width:tempSize});
-		tempEnemy.velocity.y = APP.gameVariables.verticalSpeed;
+		//tempEnemy.velocity.y = APP.gameVariables.verticalSpeed;
         tempEnemy.build();
         if(i == null || j == null){
         	tempEnemy.getContent().position = this.getTilePosition(this.getRandom(3, APP.mapData.cols - 2), -1);
@@ -1662,277 +1662,461 @@ var RainParticle = Class.extend({
 });
 
 /*jshint undef:false */
-var BarView = Class.extend({
-	init: function (width, height, maxValue, currentValue,invert){
-
-		this.maxValue = maxValue;
-		this.text = 'default';
-		this.currentValue = currentValue;
-		this.container = new PIXI.DisplayObjectContainer();
-		this.width = width;
-		this.height = height;
-
-		gambs = 0;
-		this.backShape2 = new PIXI.Graphics();
-		// this.backShape2.lineStyle(1,0xEEEEEE);
-		this.backShape2.beginFill(0xffffff);
-		this.backShape2.drawRect(-gambs,-gambs,width+gambs * 2, height+gambs * 2);
-		this.container.addChild(this.backShape2);
-
-
-		this.backShape = new PIXI.Graphics();
-		// this.backShape.lineStyle(1,0xEEEEEE);
-		this.backShape.beginFill(0xd53461);
-		this.backShape.drawRect(0,0,width, height);
-		this.container.addChild(this.backShape);
-
-		this.frontShape = new PIXI.Graphics();
-		this.frontShape.beginFill(0x3dc554);
-		this.frontShape.drawRect(0,0,width, height);
-		this.container.addChild(this.frontShape);
-		if(invert){
-			this.frontShape.pivot.x = width;
-			this.frontShape.position.x+=width
-		}
-		this.frontShape.scale.x = this.currentValue/this.maxValue;
-	},
-	addBackShape: function(color, size){
-		this.back = new PIXI.Graphics();
-		this.back.beginFill(color);
-		this.back.drawRect(-size/2,-size/2,this.width + size, this.height + size);
-		this.container.addChildAt(this.back, 0);
-	},
-	setFrontColor: function(color){
-		if(this.frontShape){
-			this.container.removeChild(this.frontShape);
-		}
-		this.frontShape = new PIXI.Graphics();
-		this.frontShape.beginFill(color);
-		this.frontShape.drawRect(0,0,this.width, this.height);
-		this.container.addChild(this.frontShape);
-
-	},
-	setBackColor: function(color){
-		if(this.backShape){
-			this.container.removeChild(this.backShape);
-		}
-		this.backShape = new PIXI.Graphics();
-		this.backShape.beginFill(color);
-		// this.backShape.lineStyle(1,0xEEEEEE);
-		this.backShape.drawRect(0,0,this.width, this.height);
-		this.container.addChildAt(this.backShape,0);
-
-	},
-	setText: function(text){
-		if(this.text !== text){
-			if(!this.lifebar){
-				this.lifebar = new PIXI.Text(text, {fill:'white', align:'center', font:'10px Arial'});
-				this.container.addChild(this.lifebar);
-			}else
-			{
-				this.lifebar.setText(text);
-			}
-		}
-	},
-	updateBar: function(currentValue, maxValue){
-		if(this.currentValue !== currentValue || this.maxValue !== maxValue && currentValue >= 0){
-			this.currentValue = currentValue;
-			this.maxValue = maxValue;
-			TweenLite.to(this.frontShape.scale, 0.2, {x:this.currentValue/this.maxValue})
-			// this.frontShape.scale.x = this.currentValue/this.maxValue;
-			if(this.frontShape.scale.x < 0){
-				this.frontShape.scale.x = 0;
-			}
-		}
-	},
-	getContent: function(){
-		return this.container;
-	},
-	setPosition: function(x,y){
-		this.container.position.x = x;
-		this.container.position.y = y;
-	},
-});
-/*jshint undef:false */
-var InputManager = Class.extend({
-	init: function (parent){
-		var game = parent;
-		var self = this;
-		this.vecPositions = [];
-		document.body.addEventListener('mouseup', function(e){
-			if(game.player){
-				game.mouseDown = false;
-			}
-		});
-		document.body.addEventListener('mousedown', function(e){
-			//só atira se não tiver na interface abaixo
-			//TODO: melhorar isso
-			if(game.player){// && APP.getMousePos().x < windowWidth && APP.getMousePos().y < windowHeight - 70){
-				game.mouseDown = true;
-			}
-		});
-		document.body.addEventListener('keyup', function(e){
-			if(game.player){
-				if(e.keyCode === 87 || e.keyCode === 38){// && game.player.velocity.y < 0){
-					self.removePosition('up');
-				}
-				else if(e.keyCode === 83 || e.keyCode === 40){// && game.player.velocity.y > 0){
-					self.removePosition('down');
-				}
-				else if(e.keyCode === 65 || e.keyCode === 37){// && game.player.velocity.x < 0){
-					self.removePosition('left');
-				}
-				else if(e.keyCode === 68 || e.keyCode === 39){// && game.player.velocity.x > 0){
-					self.removePosition('right');
-				}
-				game.player.updatePlayerVel(self.vecPositions);
-			}
-		});
-		document.body.addEventListener('keydown', function(e){
-			var vel = 6;
-			var newPos = false;
-			if(game.player){
-				if(e.keyCode === 87 || e.keyCode === 38){
-					self.removePosition('down');
-					newPos = self.addPosition('up');
-				}
-				else if(e.keyCode === 83 || e.keyCode === 40){
-					self.removePosition('up');
-					newPos = self.addPosition('down');
-				}
-				else if(e.keyCode === 65 || e.keyCode === 37){
-					self.removePosition('right');
-					newPos = self.addPosition('left');
-				}
-				else if(e.keyCode === 68 || e.keyCode === 39){
-					self.removePosition('left');
-					newPos = self.addPosition('right');
-				}
-				game.player.updatePlayerVel(self.vecPositions);
-			}
-		});
-	},
-	//
-    removePosition:function(position){
-        for (var i = this.vecPositions.length - 1; i >= 0; i--) {
-            if(this.vecPositions[i] === position)
-            {
-                this.vecPositions.splice(i,1);
-            }
-        }
+var GameScreen = AbstractScreen.extend({
+    init: function (label) {
+        this._super(label);
+        this.gameController = APP.getGameController();
     },
-    //
-    addPosition:function(position){
-        var exists = false;
-
-        for (var i = this.vecPositions.length - 1; i >= 0; i--) {
-            if(this.vecPositions[i] === position)
-            {
-                exists = true;
-            }
-        }
-
-        if(!exists){
-            this.vecPositions.push(position);
-        }
-        return exists;
-    },
-});
-
-/*jshint undef:false */
-var Particles = Entity.extend({
-    init:function(vel, timeLive, source, rotation){
-        this._super( true );
-        this.updateable = false;
-        this.colidable = false;
-        this.deading = false;
-        this.range = 40;
-        this.width = 1;
-        this.height = 1;
-        this.type = 'particle';
-        this.target = 'enemy';
-        this.fireType = 'physical';
-        this.node = null;
-        this.velocity.x = vel.x;
-        this.velocity.y = vel.y;
-        this.timeLive = timeLive;
-        this.power = 1;
-        this.defaultVelocity = 1;
-
-        this.imgSource = source;
-        this.alphadecress = 0.03;
-        this.scaledecress = 0.03;
-        this.gravity = 0;
-        if(rotation){
-            this.rotation = rotation;
-        }
-        this.maxScale = 1;
-        this.growType = 1;
-        this.maxInitScale = 1;
-        this.initScale = 1;
-
-    },
-    build: function(){
-        this.updateable = true;
-        if(this.imgSource instanceof PIXI.Text || this.imgSource instanceof PIXI.Graphics)
-        {
-            this.sprite = this.imgSource;
-        }else{
-            this.sprite = new PIXI.Sprite.fromFrame(this.imgSource);
-            this.sprite.anchor.x = 0.5;
-            this.sprite.anchor.y = 0.5;
-        }
-        this.sprite.alpha = 1;
-        this.sprite.scale.x = this.initScale;//this.maxScale * this.maxInitScale;
-        this.sprite.scale.y = this.initScale;//this.maxScale * this.maxInitScale;
-        if(this.growType === -1){
-            this.sprite.scale.x = this.maxScale;
-            this.sprite.scale.y = this.maxScale;
-        }
-        this.getContent().rotation = this.rotation;
-        // TweenLite.to(this.sprite, 0.5, {alpha:1});
-        // console.log(this.sprite.scale.x, this.maxScale);
-    },
-    update: function(){
+    destroy: function () {
         this._super();
-        if(this.gravity !== 0){
-            this.velocity.y += this.gravity;
+    },
+    build: function () {
+        this._super();
+        this.updateable = false;
+
+        this.bg = new SimpleSprite("img/assets/bg.png");
+        this.addChild(this.bg.getContent());
+        scaleConverter(this.bg.getContent().width, windowWidth, 1.2, this.bg.getContent());
+        this.bg.getContent().position.y = -this.bg.getContent().height * 0.16;
+        this.bg.getContent().position.x = -this.bg.getContent().width * 0.05
+        this.gameContainerMaster = new PIXI.DisplayObjectContainer();
+        this.addChild(this.gameContainerMaster);
+
+        this.gameContainer = new PIXI.DisplayObjectContainer();
+        this.gameContainerMaster.addChild(this.gameContainer);
+
+        this.gameGrid = new PIXI.DisplayObjectContainer();
+        this.gameContainerMaster.addChild(this.gameGrid);
+
+        var assetsToLoader = [];
+        if(assetsToLoader.length > 0){
+            this.loader = new PIXI.AssetLoader(assetsToLoader);
+            this.initLoad();
+        }else{
+            this.onAssetsLoaded();
         }
-        this.timeLive --;
-        if(this.timeLive <= 0){
-            this.preKill();
+        
+        this.applyIsometric();
+
+
+       
+    },    
+    applyIsometric:function(){
+        this.gameContainer.pivot = {x:(APP.mapBounds.x + APP.mapBounds.width)/2, y:windowHeight/2};
+        this.gameContainer.rotation = APP.gameRotation;
+
+        this.gameGrid.pivot =  {x:(APP.mapBounds.x + APP.mapBounds.width)/2, y:windowHeight/2};//{x:windowWidth/2, y:windowHeight/2};
+        this.gameGrid.rotation = APP.gameRotation;
+
+
+        this.gameContainerMaster.scale.y = APP.isometricScale;
+        this.gameContainerMaster.x = windowWidth/2
+        this.gameContainerMaster.y = windowHeight/2
+
+        var self = this;
+        this.gameGrid.interactive = true;
+        this.gameGrid.alpha = 0.1
+        this.gameContainerMaster.buttonMode = true;
+
+        this.gameGrid.mousedown = this.gameGrid.touchstart = function(data)
+        {
+            currentTile = {x: Math.floor(data.getLocalPosition(self.gameGrid).x / self.gameController.getTileSize().width),
+                y: Math.floor(data.getLocalPosition(self.gameGrid).y / self.gameController.getTileSize().height)}
+            console.log(currentTile);
+            self.label.setText(currentTile.x + " - " + currentTile.y);
         }
-        this.range = this.width;
-        if(this.rotation){
-            this.getContent().rotation += this.rotation;
+        // this.gameGrid.mouseup = this.gameGrid.mouseupoutside = this.gameGrid.touchend = this.gameGrid.touchendoutside = function(data)
+        // {
+        //     console.log(this.data.getLocalPosition(self.getContent()));
+        // };
+    },
+    drawMapData:function(){
+        for (var i = APP.mapData.mapCols; i > 0; i--) {
+            tempLine = new PIXI.Graphics();
+            tempLine.lineStyle(1,0);
+            tempLine.moveTo(0,0);
+            tempLine.lineTo(0, windowHeight);
+            tempLine.position.x = i * this.gameController.getTileSize().width;//APP.mapBounds.width / APP.mapData.mapCols;
+            // tempLine.alpha = 0.5;
+            this.addChild(tempLine);
+            this.gameGrid.addChild(tempLine);
+        };
+
+        for (var i = APP.mapData.mapRows; i > 0; i--) {
+            tempLine = new PIXI.Graphics();
+            tempLine.lineStyle(1,0);
+            tempLine.moveTo(APP.mapBounds.x,0);
+            tempLine.lineTo(APP.mapBounds.x + APP.mapBounds.width , 0);
+            tempLine.position.y = i * this.gameController.getTileSize().height//windowHeight / APP.mapData.mapRows;
+            // tempLine.alpha = 0.5;
+            this.addChild(tempLine);
+            this.gameGrid.addChild(tempLine);
+        };
+
+    },
+    showTopHUD:function(){
+
+        TweenLite.to(this.scoreLabel, 0.5, {alpha:1, delay:0.5});
+        TweenLite.to(this.tupHUD, 0.5, {y:0});
+    },
+    hideTopHUD:function(){
+        this.scoreLabel.alpha = 0;
+        TweenLite.to(this.tupHUD, 0.5, {y:-this.tupHUD.height});
+    },
+    showPauseModal:function(){
+        this.hideTopHUD();
+        this.pauseModal.show();
+    },
+    hidePauseModal:function(self){
+        self.showTopHUD();
+        self.pauseModal.hide(true);
+        self.unpause();
+    },
+    showEndModal:function(){
+        this.hideTopHUD();
+        this.endModal.show();
+    },
+    hideEndModal:function(self){
+        // console.log(this);
+        self.showTopHUD();
+        self.reset();
+    },
+    showStartModal:function(){
+        this.pauseModal.hide(true);
+        this.pause();
+        this.hideTopHUD();
+        this.startModal.show();
+    },
+    hideStartModal:function(self){
+        // console.log("HIDE HERE");
+        self.showTopHUD();
+        self.start();
+    },
+    createModal:function(){
+    },
+    onProgress:function(){
+    },
+    onAssetsLoaded:function()
+    {
+        // console.log("ASSETS LOAD");
+        this._super();
+        this.layerManager = new LayerManager();
+        this.environmentLayer = new Layer("Environment");
+        this.entityLayer = new Layer("Entity");
+        // this.fireLayer = new Layer("Fire");
+        // this.enemyLayer = new Layer("Enemy");
+        this.layerManager.addLayer(this.environmentLayer);
+        // this.layerManager.addLayer(this.enemyLayer);
+        this.layerManager.addLayer(this.entityLayer);
+        // this.layerManager.addLayer(this.fireLayer);
+
+        this.verticalSpeed = APP.gameVariables.verticalSpeed;
+
+        configEnvironment = {
+            leftWallScale:windowWidth / APP.mapData.cols / windowWidth,
+            rightWallScale:windowWidth / APP.mapData.cols / windowWidth,
+            floorScale:1,
+        }
+        // console.log(configEnvironment);
+        configEnvironment.floorScale = 1;// - configEnvironment.leftWallScale - configEnvironment.rightWallScale;
+
+        
+
+        var self = this;
+
+
+
+        this.players = [];
+
+        for (var i = this.gameController.playersList.length - 1; i >= 0; i--) {
+            tempPlayer  = new Player(this.gameController.getTileSize().width/2,this,"PLAYER" + i,this.fireLayer);
+            tempPlayer.build();
+            tempPlayer.collideCallback = this.gameOver;
+            this.entityLayer.addChild(tempPlayer);
+            tempObj = this.gameController.getTilePosition(this.gameController.playersList[i].i, this.gameController.playersList[i].j, true);
+            tempPlayer.startPosition = {x:tempObj.x,y:tempObj.y};
+            this.players.push(tempPlayer) ;
+        };
+
+        this.selecteds = [];
+
+        this.updateable = false;
+
+        this.gameContainer.addChild(this.layerManager.getContent());
+
+        this.HUDLayer = new PIXI.DisplayObjectContainer();
+        this.addChild(this.HUDLayer);
+
+        
+
+
+        this.label = new PIXI.Text("", {font:"20px Arial", fill:"red"});
+        this.addChild(this.label);
+        this.label.position.y = this.gameController.getTileSize().height;
+        this.laneCounter = 0;
+
+        this.initHUD();
+        
+        this.reset();
+        tempLine = new PIXI.Graphics();
+        tempLine.beginFill(0xff0000);
+        tempLine.drawRect(APP.mapBounds.x,APP.mapBounds.y,APP.mapBounds.width,APP.mapBounds.height);
+        tempLine.alpha = 0.1;
+        this.gameGrid.addChild(tempLine);
+
+        this.environment = new Environment(APP.mapBounds);
+        this.environmentLayer.addChild(this.environment);
+        ////this.environment.velocity.y = this.verticalSpeed;
+        this.drawMapData();
+    },
+    restart:function(self){
+        console.log("RESTART");
+        self.destroyEntities();
+        self.reset();
+    },
+    initHUD:function(){
+        var self = this;
+
+        this.tupHUD = new PIXI.DisplayObjectContainer();
+        // backTopHud = new PIXI.Graphics();
+        // backTopHud.beginFill(0);
+        // backTopHud.drawRect(0,0,windowWidth, this.gameController.getTileSize().height);
+        // this.tupHUD.addChild(backTopHud);
+
+
+        returnButtonLabel = new PIXI.Text("<", {font:"40px barrocoregular", fill:"white", stroke:"#006CD9", strokeThickness: 10});
+        returnButton = new DefaultButton("button_small_up.png","button_small_over.png");
+        returnButton.build(this.gameController.getTileSize().width, this.gameController.getTileSize().width);
+        returnButton.addLabel(returnButtonLabel,0,0,true,0,0);
+        this.tupHUD.addChild(returnButton.getContent());
+        returnButton.getContent().position = this.gameController.getTilePositionHUD(0,0);
+        returnButton.getContent().position.y = this.gameController.getTileSize().height / 2 - returnButton.getContent().height / 2;
+
+        returnButton.clickCallback = function(){
+            APP.getTransition().transitionIn('Loader');
         }
 
-        if(this.sprite.alpha > 0){
-            this.sprite.alpha -=this.alphadecress;
-            if(this.sprite.alpha <= 0){
-                this.preKill();
+        pauseButtonLabel = new PIXI.Text("II", {font:"40px barrocoregular", fill:"white", stroke:"#006CD9", strokeThickness: 10});    
+        pauseButton = new DefaultButton("button_small_up.png","button_small_over.png");
+        pauseButton.build(this.gameController.getTileSize().width, this.gameController.getTileSize().width);
+        pauseButton.addLabel(pauseButtonLabel,0,0,true,0,0);
+        this.tupHUD.addChild(pauseButton.getContent());
+        // pauseButton.getContent().position = this.gameController.getTilePositionHUD(7,0);
+        pauseButton.getContent().position = this.gameController.getTilePositionHUD(1,0);
+        pauseButton.getContent().position.y = this.gameController.getTileSize().height / 2 - pauseButton.getContent().height / 2;
+        pauseButton.clickCallback = function(){
+            self.showPauseModal();
+        }
+
+        this.scoreLabel = new PIXI.Text("0", {font:"40px barrocoregular", fill:"white", stroke:"#006CD9", strokeThickness: 10});
+        this.tupHUD.addChild(this.scoreLabel);
+        scaleConverter(this.scoreLabel.height, this.gameController.getTileSize().width, 1, this.scoreLabel);
+
+        this.HUDLayer.addChild(this.tupHUD);
+
+        this.pauseModal = new PauseModal(this, this.hidePauseModal, this.restart);
+        this.pauseModal.build();
+        this.HUDLayer.addChild(this.pauseModal.getContent());
+
+        this.endModal = new EndModal(this,this.hideEndModal);
+        this.endModal.build();
+        this.HUDLayer.addChild(this.endModal.getContent());
+
+        this.startModal = new StartModal(this, this.hideStartModal);
+        this.startModal.build();
+        this.HUDLayer.addChild(this.startModal.getContent());
+
+    },
+    updateScore:function(score){
+        this.scoreLabel.setText(score);
+        this.scoreLabel.position.x = windowWidth - this.scoreLabel.width * 1.2;
+        // this.scoreLabel.position.x = windowWidth / 2 - this.scoreLabel.width / 2;
+        this.scoreLabel.position.y = windowHeight  - this.scoreLabel.height * 1.2;
+        // this.scoreLabel.position.y = this.gameController.getTileSize().height / 2 - this.scoreLabel.height / 2;
+    },
+    reset:function(){
+
+        console.log("RESET");
+        this.lastTileCounter = -1;
+        this.tileCounter = 0;
+        this.laneCounter = 0;
+
+        this.enemyCounter = APP.gameVariables.enemyCounter;
+        this.maxEnemyCounter = APP.gameVariables.enemyCounter;
+        this.onReset = true;
+        this.updateable = false;
+
+
+        for (var i = this.players.length - 1; i >= 0; i--) {
+            this.players[i].reset();
+            tempObj = this.gameController.getTilePosition(this.gameController.playersList[i].i, this.gameController.playersList[i].j, true);
+            this.players[i].startPosition = {x:tempObj.x,y:tempObj.y};
+            this.players[i].getContent().position = this.players[i].startPosition;
+        };
+
+        tempEnemies = this.gameController.getInitScreenEntities();
+        for (var i = tempEnemies.length - 1; i >= 0; i--) {
+            this.entityLayer.addChild(tempEnemies[i]);
+            // this.enemyLayer.addChild(tempEnemies[i]);
+        };
+
+        this.showStartModal();
+        
+    },
+    start:function(){
+        console.log("START");
+        this.updateable = true;
+        // this.hideStartModal();
+        this.showTopHUD();
+    },
+    destroyEntities:function(){
+        for (var i = this.entityLayer.childs.length - 1; i >= 0; i--) {
+            // this.entityLayer.childs[i].preKill();
+            if(this.entityLayer.childs[i].type == "enemy"){
+                this.entityLayer.childs[i].kill = true;
+                this.entityLayer.removeChild(this.entityLayer.childs[i]);
             }
+        };
+        // for (var i = this.fireLayer.childs.length - 1; i >= 0; i--) {
+        //     // this.fireLayer.childs[i].preKill();
+        //     this.fireLayer.childs[i].kill = true;
+        //     this.fireLayer.removeChild(this.fireLayer.childs[i]);
+        // };
+    },
+
+    gameOver:function()
+    {
+        this.destroyEntities();
+        this.updateable = false;
+        this.showEndModal();
+        this.label.setText("gameOver");
+    },
+    updateScales:function()
+    {
+        var selected = 0;
+        for (var i = this.players.length - 1; i >= 0; i--) {
+            for (var j = this.selecteds.length - 1; j >= 0; j--) {
+                
+                if(this.selecteds[j].label == this.players[i].label){
+                    selected = i;                 
+                }
+            };
+        };
+        for (var i = this.players.length - 1; i >= 0; i--) {
+            if(this.players[i].label != this.players[selected].label){
+                this.players[i].updateScale(this.players[selected],this.players.length);
+            }
+        };
+    },
+    updateShoots:function()
+    {
+        var selected = 0;
+        for (var i = this.players.length - 1; i >= 0; i--) {
+            for (var j = this.selecteds.length - 1; j >= 0; j--) {
+                
+                if(this.selecteds[j].label == this.players[i].label){
+                    selected = i;                 
+                }
+            };
+        };
+        for (var i = this.players.length - 1; i >= 0; i--) {
+            if(this.players[i].label == this.players[selected].label){
+                this.players[i].shoot();
+            }
+        };
+    },
+    addSelected:function(entity){
+        var has = false;
+        for (var i = this.selecteds.length - 1; i >= 0; i--) {
+            if(this.selecteds[i] == entity){
+                has = true;
+            }
+        };
+        if(!has){
+            this.selecteds.push(entity);
         }
-        if(this.sprite.scale.x < 0){
-            this.preKill();
-        }
-        if(this.sprite.scale.x > this.maxScale){
+    },
+    removeSelected:function(entity){
+        for (var i = 0; i < this.selecteds.length; i++) {
+            if(this.selecteds[i] == entity){
+                this.selecteds.splice(i, 1);
+            }
+        };
+    },
+    updateSelecteds:function(){
+        for (var i = this.players.length - 1; i >= 0; i--) {
+            if(this.players[i].mouseDown){
+                this.addSelected(this.players[i]);
+            }else{
+                this.removeSelected(this.players[i]);
+            }
+        };
+    },
+    update:function()
+    {
+        if(!this.updateable){
             return;
         }
-        this.sprite.scale.x += this.scaledecress;
-        this.sprite.scale.y += this.scaledecress;
+        if(this.layerManager){
+            this.updateSelecteds();
+            if(this.selecteds.length == 1){
+                this.updateScales();
+                this.updateShoots();
+            }else if(this.selecteds.length == 2){
+                for (var i = this.selecteds.length - 1; i >= 0; i--) {
+                    this.selecteds[i].toAverrageScale();
+                };
+            }
+
+            this.layerManager.update();
+
+            this.updateCollisions();
+
+            
+
+            // this.laneCounter += this.verticalSpeed;
+            this.tileCounter = Math.floor(this.laneCounter / this.gameController.getTileSize().height);
+            // console.log(this.tileCounter);
+
+            this.gameController.update(this.tileCounter, this.entityLayer);
+
+            // if(this.tileCounter > this.lastTileCounter)
+                // this.updateEnemySpawner();
+            // this.label2.setText(this.tileCounter);
+            this.updateScore(this.tileCounter);
+        }
+
     },
-    preKill:function(){
-        //this._super();
-        var self = this;
-        this.sprite.alpha = 0;
-        this.updateable = true;
-        this.kill = true;
-        //TweenLite.to(this.getContent(), 0.3, {alpha:0, onComplete:function(){self.kill = true;}});
+    updateCollisions:function()
+    {
+        var hasCollision;
+        for (var i = this.players.length - 1; i >= 0; i--) {            
+            tempPlayer = this.players[i];
+            hasCollision = false;
+            targetPosition = {x:tempPlayer.getPosition().x, y:tempPlayer.getPosition().y};
+            if(targetPosition.x - tempPlayer.range < APP.mapBounds.x){
+                hasCollision = true;
+                targetPosition.x = APP.mapBounds.x + tempPlayer.range;
+            }else if(targetPosition.x + tempPlayer.range > APP.mapBounds.width + APP.mapBounds.x){
+                hasCollision = true;
+                targetPosition.x = APP.mapBounds.width - tempPlayer.range + APP.mapBounds.x;
+            }
+            if(hasCollision){
+                tempPlayer.goTo(targetPosition, true);
+            }
+        }
+        for (var i = this.players.length - 1; i >= 0; i--) {
+            this.entityLayer.collideChilds(this.players[i])
+            // this.enemyLayer.collideChilds(this.players[i]);
+        };
+        // this.entityLayer.collideChilds(this.player1);
+        // this.enemyLayer.collideChilds(this.player2);
+        // this.enemyLayer.collideChilds(this.player1);
     }
 });
+
 /*jshint undef:false */
-var GameScreen = AbstractScreen.extend({
+var GameScreenOLD = AbstractScreen.extend({
     init: function (label) {
         this._super(label);
         this.gameController = APP.getGameController();
@@ -2527,7 +2711,7 @@ var LoaderScreen = AbstractScreen.extend({
         this.logoLabel.position = APP.getGameController().getTilePositionHUD(3,APP.mapData.rows - 1);
         this.logoLabel.position.y += APP.getGameController().getTileSizeHUD().height / 2 - this.logoLabel.height / 2;
 
-        // this.screenManager.change('Game');
+        this.screenManager.change('Game');
         //this.screenContainer.position.x = windowWidth - this.screenContainer.width * 1.2;
         //this.screenContainer.position.y = windowHeight - this.screenContainer.height * 1.3;
 
@@ -2578,6 +2762,276 @@ var TransitionScreen = Class.extend({
     },
     update: function(){
     },
+});
+/*jshint undef:false */
+var BarView = Class.extend({
+	init: function (width, height, maxValue, currentValue,invert){
+
+		this.maxValue = maxValue;
+		this.text = 'default';
+		this.currentValue = currentValue;
+		this.container = new PIXI.DisplayObjectContainer();
+		this.width = width;
+		this.height = height;
+
+		gambs = 0;
+		this.backShape2 = new PIXI.Graphics();
+		// this.backShape2.lineStyle(1,0xEEEEEE);
+		this.backShape2.beginFill(0xffffff);
+		this.backShape2.drawRect(-gambs,-gambs,width+gambs * 2, height+gambs * 2);
+		this.container.addChild(this.backShape2);
+
+
+		this.backShape = new PIXI.Graphics();
+		// this.backShape.lineStyle(1,0xEEEEEE);
+		this.backShape.beginFill(0xd53461);
+		this.backShape.drawRect(0,0,width, height);
+		this.container.addChild(this.backShape);
+
+		this.frontShape = new PIXI.Graphics();
+		this.frontShape.beginFill(0x3dc554);
+		this.frontShape.drawRect(0,0,width, height);
+		this.container.addChild(this.frontShape);
+		if(invert){
+			this.frontShape.pivot.x = width;
+			this.frontShape.position.x+=width
+		}
+		this.frontShape.scale.x = this.currentValue/this.maxValue;
+	},
+	addBackShape: function(color, size){
+		this.back = new PIXI.Graphics();
+		this.back.beginFill(color);
+		this.back.drawRect(-size/2,-size/2,this.width + size, this.height + size);
+		this.container.addChildAt(this.back, 0);
+	},
+	setFrontColor: function(color){
+		if(this.frontShape){
+			this.container.removeChild(this.frontShape);
+		}
+		this.frontShape = new PIXI.Graphics();
+		this.frontShape.beginFill(color);
+		this.frontShape.drawRect(0,0,this.width, this.height);
+		this.container.addChild(this.frontShape);
+
+	},
+	setBackColor: function(color){
+		if(this.backShape){
+			this.container.removeChild(this.backShape);
+		}
+		this.backShape = new PIXI.Graphics();
+		this.backShape.beginFill(color);
+		// this.backShape.lineStyle(1,0xEEEEEE);
+		this.backShape.drawRect(0,0,this.width, this.height);
+		this.container.addChildAt(this.backShape,0);
+
+	},
+	setText: function(text){
+		if(this.text !== text){
+			if(!this.lifebar){
+				this.lifebar = new PIXI.Text(text, {fill:'white', align:'center', font:'10px Arial'});
+				this.container.addChild(this.lifebar);
+			}else
+			{
+				this.lifebar.setText(text);
+			}
+		}
+	},
+	updateBar: function(currentValue, maxValue){
+		if(this.currentValue !== currentValue || this.maxValue !== maxValue && currentValue >= 0){
+			this.currentValue = currentValue;
+			this.maxValue = maxValue;
+			TweenLite.to(this.frontShape.scale, 0.2, {x:this.currentValue/this.maxValue})
+			// this.frontShape.scale.x = this.currentValue/this.maxValue;
+			if(this.frontShape.scale.x < 0){
+				this.frontShape.scale.x = 0;
+			}
+		}
+	},
+	getContent: function(){
+		return this.container;
+	},
+	setPosition: function(x,y){
+		this.container.position.x = x;
+		this.container.position.y = y;
+	},
+});
+/*jshint undef:false */
+var InputManager = Class.extend({
+	init: function (parent){
+		var game = parent;
+		var self = this;
+		this.vecPositions = [];
+		document.body.addEventListener('mouseup', function(e){
+			if(game.player){
+				game.mouseDown = false;
+			}
+		});
+		document.body.addEventListener('mousedown', function(e){
+			//só atira se não tiver na interface abaixo
+			//TODO: melhorar isso
+			if(game.player){// && APP.getMousePos().x < windowWidth && APP.getMousePos().y < windowHeight - 70){
+				game.mouseDown = true;
+			}
+		});
+		document.body.addEventListener('keyup', function(e){
+			if(game.player){
+				if(e.keyCode === 87 || e.keyCode === 38){// && game.player.velocity.y < 0){
+					self.removePosition('up');
+				}
+				else if(e.keyCode === 83 || e.keyCode === 40){// && game.player.velocity.y > 0){
+					self.removePosition('down');
+				}
+				else if(e.keyCode === 65 || e.keyCode === 37){// && game.player.velocity.x < 0){
+					self.removePosition('left');
+				}
+				else if(e.keyCode === 68 || e.keyCode === 39){// && game.player.velocity.x > 0){
+					self.removePosition('right');
+				}
+				game.player.updatePlayerVel(self.vecPositions);
+			}
+		});
+		document.body.addEventListener('keydown', function(e){
+			var vel = 6;
+			var newPos = false;
+			if(game.player){
+				if(e.keyCode === 87 || e.keyCode === 38){
+					self.removePosition('down');
+					newPos = self.addPosition('up');
+				}
+				else if(e.keyCode === 83 || e.keyCode === 40){
+					self.removePosition('up');
+					newPos = self.addPosition('down');
+				}
+				else if(e.keyCode === 65 || e.keyCode === 37){
+					self.removePosition('right');
+					newPos = self.addPosition('left');
+				}
+				else if(e.keyCode === 68 || e.keyCode === 39){
+					self.removePosition('left');
+					newPos = self.addPosition('right');
+				}
+				game.player.updatePlayerVel(self.vecPositions);
+			}
+		});
+	},
+	//
+    removePosition:function(position){
+        for (var i = this.vecPositions.length - 1; i >= 0; i--) {
+            if(this.vecPositions[i] === position)
+            {
+                this.vecPositions.splice(i,1);
+            }
+        }
+    },
+    //
+    addPosition:function(position){
+        var exists = false;
+
+        for (var i = this.vecPositions.length - 1; i >= 0; i--) {
+            if(this.vecPositions[i] === position)
+            {
+                exists = true;
+            }
+        }
+
+        if(!exists){
+            this.vecPositions.push(position);
+        }
+        return exists;
+    },
+});
+
+/*jshint undef:false */
+var Particles = Entity.extend({
+    init:function(vel, timeLive, source, rotation){
+        this._super( true );
+        this.updateable = false;
+        this.colidable = false;
+        this.deading = false;
+        this.range = 40;
+        this.width = 1;
+        this.height = 1;
+        this.type = 'particle';
+        this.target = 'enemy';
+        this.fireType = 'physical';
+        this.node = null;
+        this.velocity.x = vel.x;
+        this.velocity.y = vel.y;
+        this.timeLive = timeLive;
+        this.power = 1;
+        this.defaultVelocity = 1;
+
+        this.imgSource = source;
+        this.alphadecress = 0.03;
+        this.scaledecress = 0.03;
+        this.gravity = 0;
+        if(rotation){
+            this.rotation = rotation;
+        }
+        this.maxScale = 1;
+        this.growType = 1;
+        this.maxInitScale = 1;
+        this.initScale = 1;
+
+    },
+    build: function(){
+        this.updateable = true;
+        if(this.imgSource instanceof PIXI.Text || this.imgSource instanceof PIXI.Graphics)
+        {
+            this.sprite = this.imgSource;
+        }else{
+            this.sprite = new PIXI.Sprite.fromFrame(this.imgSource);
+            this.sprite.anchor.x = 0.5;
+            this.sprite.anchor.y = 0.5;
+        }
+        this.sprite.alpha = 1;
+        this.sprite.scale.x = this.initScale;//this.maxScale * this.maxInitScale;
+        this.sprite.scale.y = this.initScale;//this.maxScale * this.maxInitScale;
+        if(this.growType === -1){
+            this.sprite.scale.x = this.maxScale;
+            this.sprite.scale.y = this.maxScale;
+        }
+        this.getContent().rotation = this.rotation;
+        // TweenLite.to(this.sprite, 0.5, {alpha:1});
+        // console.log(this.sprite.scale.x, this.maxScale);
+    },
+    update: function(){
+        this._super();
+        if(this.gravity !== 0){
+            this.velocity.y += this.gravity;
+        }
+        this.timeLive --;
+        if(this.timeLive <= 0){
+            this.preKill();
+        }
+        this.range = this.width;
+        if(this.rotation){
+            this.getContent().rotation += this.rotation;
+        }
+
+        if(this.sprite.alpha > 0){
+            this.sprite.alpha -=this.alphadecress;
+            if(this.sprite.alpha <= 0){
+                this.preKill();
+            }
+        }
+        if(this.sprite.scale.x < 0){
+            this.preKill();
+        }
+        if(this.sprite.scale.x > this.maxScale){
+            return;
+        }
+        this.sprite.scale.x += this.scaledecress;
+        this.sprite.scale.y += this.scaledecress;
+    },
+    preKill:function(){
+        //this._super();
+        var self = this;
+        this.sprite.alpha = 0;
+        this.updateable = true;
+        this.kill = true;
+        //TweenLite.to(this.getContent(), 0.3, {alpha:0, onComplete:function(){self.kill = true;}});
+    }
 });
 var Enemy = Entity.extend({
 	init:function(label, size){
@@ -2952,6 +3406,7 @@ var Player = Class.extend({
         this.playerImage.getContent().scale.y = 2;
         this.getContent().interactive = true;
         this.hitContainer.interactive = true;
+        this.hitContainer.buttonMode = true;
 
 
 

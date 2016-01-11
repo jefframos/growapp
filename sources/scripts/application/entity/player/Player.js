@@ -67,6 +67,7 @@ var Player = Class.extend({
         this.playerImage.getContent().scale.y = 2;
         this.getContent().interactive = true;
         this.hitContainer.interactive = true;
+        this.hitContainer.buttonMode = true;
 
 
 
